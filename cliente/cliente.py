@@ -1,6 +1,6 @@
 import socket
 
-HOST = "127.0.0.1"  
+HOST = "127.0.0.1"
 PORT = 6000
 
 def enviar_nome(nome):
@@ -8,9 +8,9 @@ def enviar_nome(nome):
     print(f"Conectando ao servidor {HOST}:{PORT}...")
 
     client.connect((HOST, PORT))
-    
+
     client.sendall(nome.encode())
     resposta = client.recv(1024).decode()
-    
+
     client.close()
     return resposta
