@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS Maquina (
   id INTEGER AUTO_INCREMENT,
   loja INTEGER NOT NULL,
   modelo INTEGER NOT NULL,
-
+  imagem TEXT NOT NULL,
   preco REAL NOT NULL,
   mes_fabricacao INTEGER NOT NULL,
   ano_fabricacao INTEGER NOT NULL,

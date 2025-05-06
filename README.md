@@ -10,15 +10,15 @@ Repositório dedicado ao desenvolvimento do trabalho pratico de sistemas distrib
 
 ## TODO List
 
-- [ ] Banco de dados (SQLite) *se tiver tempo separar do Servidor
+- [X] Banco de dados (SQLite) *se tiver tempo separar do Servidor
 - [ ] Cliente
   - [ ] Estrutura dos arquivos
   - [ ] Pensar na interface gráfica
     - [ ] Tela de login / cadastro
 - [ ] Servidor
   - [ ] Estrutura dos arquivos
-  - [ ] Uso de Threads
+  - [X] Uso de Threads (parcialmente feito)
 - [ ] Estrura das mensagens (como acontecerá a conversa)
   - [ ] "Rotas de requisição"
   - [ ] "Rotas de resposta"
-- [ ] Docker
+- [X] Docker

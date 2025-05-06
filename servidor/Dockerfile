@@ -6,4 +6,4 @@ COPY servidor.py ./
 
 EXPOSE 5000
 
-CMD ["python", "servidor.py"]
+CMD ["python", "listener.py"]
