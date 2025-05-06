@@ -2,7 +2,8 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
-COPY servidor.py ./
+COPY listener.py .
+COPY connection.py .
 
 EXPOSE 5000
 

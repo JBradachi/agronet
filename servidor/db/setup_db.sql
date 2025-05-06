@@ -28,9 +28,8 @@ CREATE TABLE IF NOT EXISTS Loja (
 
 -- Tabela de empresas: apenas o nome
 CREATE TABLE IF NOT EXISTS Empresa (
-  id INTEGER AUTO_INCREMENT,
   nome TEXT NOT NULL,
-  PRIMARY KEY (id)
+  PRIMARY KEY (nome)
 );
 
 -- Tabela de modelos de máquina: nome, descrição
@@ -43,7 +42,7 @@ CREATE TABLE IF NOT EXISTS Modelo (
   descricao TEXT NOT NULL,
 
   PRIMARY KEY (id),
-  FOREIGN KEY (fabricante) REFERENCES Empresa (id)
+  FOREIGN KEY (fabricante) REFERENCES Empresa (nome)
 );
 
 -- Tabela de máquinas: preço e data de fabricação
@@ -63,20 +62,20 @@ CREATE TABLE IF NOT EXISTS Maquina (
   FOREIGN KEY (modelo) REFERENCES Modelo (id)
 );
 
-INSERT IGNORE INTO `Usuario` (`nome`, `senha`) VALUES
-  ('admin', 'admin')
+INSERT INTO `Usuario` (`nome`, `senha`) VALUES
+  ('admin', 'admin');
 
-INSERT IGNORE INTO `Loja` (`usuario_dono`, `nome`, `dia_criacao`, `mes_criacao`, `ano_criacao`, `cidade`, `estado`, `descricao`) VALUES
-  ('admin', 'adminStore', 12, 2, 2004, 'Fernandópolis', 'SP', 'Loja de colheitadeiras de café')
+INSERT INTO `Loja` (`usuario_dono`, `nome`, `dia_criacao`, `mes_criacao`, `ano_criacao`, `cidade`, `estado`, `descricao`) VALUES
+  (1, 'adminStore', 12, 2, 2004, 'Fernandópolis', 'SP', 'Loja de colheitadeiras de café');
 
-INSERT IGNORE INTO `Empresa` (`nome`) VALUES
-  ('CAT')
+INSERT INTO `Empresa` (`nome`) VALUES
+  ('CAT');
 
-INSERT IGNORE INTO `Modelo` (`fabricante`, `nome`, `descricao`) VALUES
-  (1, 'Challenger MT525D 4WD', 'Linha de produto:	tratores agrícolas, Número de série	D049045, Número de catálogo	473575')
+INSERT INTO `Modelo` (`fabricante`, `nome`, `descricao`) VALUES
+  ('CAT', 'Challenger MT525D 4WD', 'Linha de produto:	tratores agrícolas, Número de série	D049045, Número de catálogo	473575');
 
-INSERT IGNORE INTO `Maquina` (`loja`, `modelo`, `imagem`, `preco`, `mes_fabricacao`, `ano_fabricacao`) VALUES
-  (1, 1, 'static/CAT1.png', 394.23, 2, 2013)
+INSERT INTO `Maquina` (`loja`, `modelo`, `imagem`, `preco`, `mes_fabricacao`, `ano_fabricacao`) VALUES
+  (1, 1, 'static/CAT1.png', 394.23, 2, 2013);
 
   -- Horas de utilização	5.200 h 
   -- Localização da máquina	Mexicali, Mexico

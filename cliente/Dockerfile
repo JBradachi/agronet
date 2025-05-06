@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y \
   libqt6widgets6 \
   libqt6core6 \
   x11-utils \
+  sqlite3 \
   --no-install-recommends && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/*

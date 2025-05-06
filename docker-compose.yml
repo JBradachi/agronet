@@ -13,6 +13,8 @@ services:
   server:
     build: ./servidor
     container_name: server-app
+    volumes:
+      - ./servidor:/app
     ports:
       - "6000:6000"
     network_mode: host 

@@ -8,5 +8,5 @@ def execute_sql_file(db_cursor: sqlite3.Cursor, path: str):
 # Cria as tabelas previstas no projeto de banco de dados, com seus devidos
 # atributos, caso ainda não existam. Usa o script setup_db.sql
 def setup_database(db_cursor: sqlite3.Cursor):
-    execute_sql_file(db_cursor, "setup_db.sql")
+    execute_sql_file(db_cursor, "./db/setup_db.sql")
 
