@@ -8,7 +8,11 @@ services:
     environment:
       - DISPLAY=${DISPLAY}
       - QT_X11_NO_MITSHM=1
-    network_mode: host  
+    network_mode: host 
+    depends_on:
+      - banco
+      - server
+
 
   server:
     build: ./servidor
@@ -18,3 +22,14 @@ services:
     ports:
       - "6000:6000"
     network_mode: host 
+    depends_on:
+      - banco
+
+  banco:
+    build: ./banco
+    container_name: database-app
+    volumes:
+      - ./banco:/app
+    ports:
+      - "3600:3600"
+    network_mode: host

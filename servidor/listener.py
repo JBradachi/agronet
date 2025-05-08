@@ -1,10 +1,10 @@
 import socket
-import sqlite3
 from connection import Connection
-import db.db
+import logging as log
 
-HOST = "0.0.0.0"  
+HOST = "127.0.0.1" 
 PORT = 6000
+log.basicConfig(level=log.INFO)
 
 def main():
     
@@ -14,19 +14,7 @@ def main():
     server.bind((HOST, PORT))
     server.listen()
 
-    print(f"Servidor ouvindo em {HOST}:{PORT}")
-
-    # cria o banco e insere informações base
-    try:
-        conn_db = sqlite3.connect('./db/agronet.db')
-        cursor = conn_db.cursor()
-        db.db.setup_database(cursor)    
-        cursor.close()
-
-    except:
-        print("Erro na conexão do banco")
-        print("Certifique que o banco não será duplicado")
-        exit(1)
+    log.info(f"Servidor de aplicação ouvindo em {HOST}:{PORT}")
     
     # Servidor começa a ouvir e cria uma thread a cada conexão
     while True:
@@ -35,7 +23,7 @@ def main():
             connection = Connection(conn, addr)
             
         except:
-            print("erro no listener")
+            log.error("erro no listener")
             exit(2)
 
 if __name__ == "__main__":
