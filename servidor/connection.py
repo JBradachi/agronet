@@ -5,11 +5,10 @@ import sqlite3
 
 class Connection:
 
-    def __init__(self, conn, addr, conn_db):
+    def __init__(self, conn, addr):
         try:
             self.conn = conn
             self.addr_cliente = addr
-            self.conn_db = conn_db
             tread = Thread(target=self.run)
             tread.start()
         except:
@@ -18,9 +17,9 @@ class Connection:
 
     def run(self):
         try:
-            #cursor = self.conn_db.cursor()
-            #teste = cursor.execute("SELECT * FROM Usuario").fetchall()
-            pass
+            conn_db = sqlite3.connect('./db/agronet.db')
+            cursor = conn_db.cursor()
+            teste = cursor.execute("SELECT * FROM Usuario").fetchall()
         except:
             print("erro ao criar o cursor")
             exit(4)
@@ -31,9 +30,9 @@ class Connection:
 
             nome = self.conn.recv(1024).decode()
             
-            resposta = f"roi {nome}, né?"
+            resposta = f"roi {nome}, né?{teste}"
             self.conn.sendall(resposta.encode())
-
+            cursor.close()
             self.conn.close()
         except:
             print("erro na tread de resposta")

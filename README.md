@@ -22,3 +22,9 @@ Repositório dedicado ao desenvolvimento do trabalho pratico de sistemas distrib
   - [ ] "Rotas de requisição"
   - [ ] "Rotas de resposta"
 - [X] Docker
+
+comando para rodar corretamente no ubuntu
+
+```bash
+xhost +local:*
+```
