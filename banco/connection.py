@@ -1,17 +1,15 @@
-from threading import Thread 
+from threading import Thread
 import socket
 import sqlite3
 import json
 import logging as log
 
-#TODO: coiso pra lidar com concorrencia 
+#TODO: coiso pra lidar com concorrencia
 # (talvez fazer uma fila e executar cada Thread uma vez)
 # "listener" não bloqueante joga as conexões numa fila
 # executa uma thread por vez
 
-#TODO: trocar esse nome aqui pra deixar mais explicativo
-class Connection:
-
+class ConnectionHandler:
     def __init__(self, conn, addr):
         try:
             self.conn = conn
@@ -24,12 +22,13 @@ class Connection:
 
     # Thread
     def run(self):
-        
         try:
             log.info(f"Conexão recebida de {self.addr_cliente}")
 
-            # recebe a consulta
-            consulta = self.conn.recv(1024).decode()
+            # A consulta, como descrito em docs/decisoes.md, é um JSON com dois
+            # campos: um com a consulta em si e outro com seus parâmetros
+            mensagem = self.conn.recv(1024).decode()
+            mensagem = json.loads(mensagem)
 
             # tenta executar a consulta
             try:
@@ -37,17 +36,18 @@ class Connection:
                 cursor = conn_db.cursor()
 
                 try:
-                    dados = cursor.execute(consulta).fetchall()
+                    dados = cursor.execute(mensagem["consulta"],
+                         parameters=tuple(mensagem["parametros"])).fetchall()
                 except:
                     log.error("erro ao fazer a consulta")
                     log.error("pode ser a sintaxe")
                     exit(6)
-                    
+
                 cursor.close()
             except:
                 log.error("erro ao fazer a consulta")
                 exit(4)
-            
+
             # devolve a consulta em JSON
             dados_json = json.dumps(dados)
             self.conn.sendall(dados_json.encode())

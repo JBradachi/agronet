@@ -1,27 +1,26 @@
 import socket
-from connection import Connection
+from connection import ConnectionHandler
 import logging as log
 
-HOST = "127.0.0.1" 
+HOST = "127.0.0.1"
 PORT = 6000
 log.basicConfig(level=log.INFO)
 
 def main():
-    
-    # Associa uma porta ao socket de escuta do sistema 
+    # Associa uma porta ao socket de escuta do sistema
     # (TCP == socket.SOCK_STREAM)
+    # (IPv4 == socket.AF_INET)
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.bind((HOST, PORT))
     server.listen()
 
     log.info(f"Servidor de aplicação ouvindo em {HOST}:{PORT}")
-    
-    # Servidor começa a ouvir e cria uma thread a cada conexão
     while True:
         try:
             conn, addr = server.accept()
-            connection = Connection(conn, addr)
-            
+            # A criação do objeto ConnectionHandler cria uma thread dedicada
+            # para lidar com a conexão
+            ConnectionHandler(conn, addr)
         except:
             log.error("erro no listener")
             exit(2)
