@@ -36,7 +36,6 @@ def main():
         try:
             conn, addr = server.accept()
             ConnectionHandler(conn, addr)
-
         except:
             log.error("erro no listener")
             exit(2)

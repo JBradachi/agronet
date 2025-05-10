@@ -5,12 +5,21 @@ import logging as log
 
 DB_HOST = "127.0.0.2"
 DB_PORT = 3600
+BUFSIZE = 4096
 
-# TODO: acredito q agora é só da-lhe nos CSU
-# usar esse protótipo pra fazer
+def setup_database_connection():
+    conn_db = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    log.info("Thread conectando ao servidor"
+             f" de dados {DB_HOST}:{DB_PORT}...")
+    conn_db.connect((DB_HOST, DB_PORT))
+    return conn_db
+
+def consulta_json(sql, params):
+    consulta = { "consulta" : sql, "parametros" : params }
+    return json.dumps(consulta).encode()
+
+# Classe que cria threads e lida com conexões
 class ConnectionHandler:
-
-    # Passa para a thread informações necessárias e inicia
     def __init__(self, conn, addr):
         try:
             self.conn = conn
@@ -21,44 +30,50 @@ class ConnectionHandler:
             log.error("erro na criação da tread")
             exit(3)
 
+    def __del__(self):
+        self.conn.close()
+
     # Executa a thread
     def run(self):
-
-        # cria uma conexão com o banco e executa a consulta
         try:
-            #TODO: jogar tudo isso dentro de uma função
-            conn_db = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            log.info("Thread conectando ao servidor"
-                     f" de dados {DB_HOST}:{DB_PORT}...")
+            self.conn_db = setup_database_connection()
+            while True:
+                pedido_json = self.conn.recv(BUFSIZE).decode()
+                if not pedido_json:
+                    break # conexão encerrada
+                pedido = json.loads(pedido_json)
+                # O campo 'tipo_pedido' diz-nos como lidar com o pedido recebido
+                ok = True
+                match pedido["tipo_pedido"]:
+                    case "login":
+                        ok = self.handle_login(pedido)
+                    case _:
+                        log.error("tipo de pedido não reconhecido")
+                if not ok:
+                    # TODO responder ao cliente aqui
+                    log.info("O pedido não foi bem sucedido")
 
-            conn_db.connect((DB_HOST, DB_PORT))
-
-            # o banco recebe um JSON com a consulta e seus parâmetros
-            consulta = "SELECT * FROM Usuario"
-            mensagem = { "consulta" : consulta, "parametros" : []}
-            mensagem = json.dumps(mensagem).encode()
-            conn_db.sendall(mensagem)
-
-            dados_json = conn_db.recv(1024).decode()
-            dados = json.loads(dados_json)
-
-            conn_db.close()
-
+            self.conn_db.close()
         except:
             log.error("erro ao contatar o servidor de dados")
-            exit(4)
+            exit(4) # não há como continuar
 
-        # faz o envio dos dados para o cliente
+    # { "tipo_pedido" : "login", "nome" : <nome>, "senha" : <senha> }
+    def handle_login(self, dados):
+        nome = dados["nome"]
+        senha = dados["senha"]
+        # O usuário existe com essa senha no banco de dados?
+        mensagem = consulta_json(
+                "SELECT * FROM Usuario "
+                "WHERE nome = ? AND senha = ?", (nome, senha))
         try:
-
-            log.info(f"Conexão recebida de {self.addr_cliente}")
-
-            nome = self.conn.recv(1024).decode()
-
-            resposta = f"roi {nome}, né?{dados}"
-
-            self.conn.sendall(resposta.encode())
-            self.conn.close()
+            self.conn_db.sendall(mensagem)
+            resposta_db_json = self.conn_db.recv(BUFSIZE).decode()
+            resposta_db = json.loads(resposta_db_json)
+            if not resposta_db:
+                # sem resposta do banco => não existe tal usuário
+                return False
+            return True # deu bom!
         except:
-            log.error("erro na tread de resposta")
-            exit(5)
+            log.error("erro na comunicação com o servidor de dados")
+            exit(4)
