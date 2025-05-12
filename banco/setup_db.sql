@@ -1,16 +1,6 @@
--- Tabela de usuários: nome, senha
-CREATE TABLE IF NOT EXISTS Usuario (
-  id INTEGER AUTO_INCREMENT,
-  nome TEXT NOT NULL,
-  senha TEXT NOT NULL,
-  PRIMARY KEY (id)
-);
-
 -- Tabela de lojas: nome, data de criação, cidade, UF, descrição
--- Cada loja é propriedade de um único usuário
 CREATE TABLE IF NOT EXISTS Loja (
   id INTEGER AUTO_INCREMENT,
-  usuario_dono INTEGER NOT NULL,
 
   nome TEXT NOT NULL,
   dia_criacao INTEGER NOT NULL,
@@ -20,8 +10,17 @@ CREATE TABLE IF NOT EXISTS Loja (
   estado TEXT NOT NULL,
   descricao TEXT NOT NULL,
 
+  PRIMARY KEY (id)
+);
+
+-- Tabela de usuários: nome, senha, loja
+CREATE TABLE IF NOT EXISTS Usuario (
+  id INTEGER AUTO_INCREMENT,
+  nome TEXT NOT NULL,
+  senha TEXT NOT NULL,
+  loja INTEGER, -- pode ser nulo; usuário pode não ter uma loja ainda
   PRIMARY KEY (id),
-  FOREIGN KEY (usuario_dono) REFERENCES Usuario (id)
+  FOREIGN KEY (loja) REFERENCES Loja (id)
 );
 
 --------------------------------------------------------------------------------
@@ -62,11 +61,11 @@ CREATE TABLE IF NOT EXISTS Maquina (
   FOREIGN KEY (modelo) REFERENCES Modelo (id)
 );
 
-INSERT INTO `Usuario` (`nome`, `senha`) VALUES
-  ('admin', 'admin');
-
-INSERT INTO `Loja` (`usuario_dono`, `nome`, `dia_criacao`, `mes_criacao`, `ano_criacao`, `cidade`, `estado`, `descricao`) VALUES
+INSERT INTO `Loja` (`id`, `nome`, `dia_criacao`, `mes_criacao`, `ano_criacao`, `cidade`, `estado`, `descricao`) VALUES
   (1, 'adminStore', 12, 2, 2004, 'Fernandópolis', 'SP', 'Loja de colheitadeiras de café');
+
+INSERT INTO `Usuario` (`nome`, `senha`, `loja` ) VALUES
+  ('admin', 'admin', 1 );
 
 INSERT INTO `Empresa` (`nome`) VALUES
   ('CAT');
