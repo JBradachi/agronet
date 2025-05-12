@@ -12,11 +12,11 @@ Repositório dedicado ao desenvolvimento do trabalho pratico de sistemas distrib
 
 - [X] Banco de dados (SQLite) *se tiver tempo separar do Servidor
 - [ ] Cliente
-  - [ ] Estrutura dos arquivos
+  - [X] Estrutura dos arquivos
   - [ ] Pensar na interface gráfica
     - [ ] Tela de login / cadastro
 - [ ] Servidor
-  - [ ] Estrutura dos arquivos
+  - [X] Estrutura dos arquivos
   - [X] Uso de Threads (parcialmente feito)
 - [ ] Estrura das mensagens (como acontecerá a conversa)
   - [ ] "Rotas de requisição"

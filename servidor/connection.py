@@ -2,6 +2,7 @@ from threading import Thread
 import socket
 import json
 import logging as log
+import secrets
 
 DB_HOST = "127.0.0.2"
 DB_PORT = 3600
@@ -17,6 +18,13 @@ def setup_database_connection():
 def consulta_json(sql, params):
     consulta = { "consulta" : sql, "parametros" : params }
     return json.dumps(consulta).encode()
+
+def resposta_login_json(ok):
+    # token pode ser 
+    # - uma URL segura de 32 caracteres se sucesso no login
+    # - valor false se falhou no login
+    resposta = { "token" : ok }
+    return json.dumps(resposta).encode()
 
 # Classe que cria threads e lida com conexões
 class ConnectionHandler:
@@ -47,6 +55,8 @@ class ConnectionHandler:
                 match pedido["tipo_pedido"]:
                     case "login":
                         ok = self.handle_login(pedido)
+                        resposta = resposta_login_json(ok)
+                        self.conn.sendall(resposta)
                     case _:
                         log.error("tipo de pedido não reconhecido")
                 if not ok:
@@ -73,7 +83,7 @@ class ConnectionHandler:
             if not resposta_db:
                 # sem resposta do banco => não existe tal usuário
                 return False
-            return True # deu bom!
+            return secrets.token_urlsafe(16) # deu bom, retorna token!
         except:
             log.error("erro na comunicação com o servidor de dados")
             exit(4)
