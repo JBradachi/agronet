@@ -32,6 +32,8 @@ class ConnectionHandler:
         try:
             self.conn = conn
             self.addr_cliente = addr
+            self.token = None
+            self.user = ""
             tread = Thread(target=self.run)
             tread.start()
         except:
@@ -83,7 +85,9 @@ class ConnectionHandler:
             if not resposta_db:
                 # sem resposta do banco => não existe tal usuário
                 return False
-            return secrets.token_urlsafe(16) # deu bom, retorna token!
+            self.token = secrets.token_urlsafe(16)
+            self.user = nome
+            return self.token # deu bom, retorna token!
         except:
             log.error("erro na comunicação com o servidor de dados")
             exit(4)
