@@ -1,6 +1,6 @@
 import sys
 from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton
-from cliente import enviar_nome  
+import cliente
 
 class Interface(QWidget):
     def __init__(self):
@@ -17,8 +17,14 @@ class Interface(QWidget):
         self.input_nome = QLineEdit(self)
         self.layout.addWidget(self.input_nome)
 
+        self.label = QLabel("Digite sua senha:")
+        self.layout.addWidget(self.label)
+
+        self.input_senha = QLineEdit(self)
+        self.layout.addWidget(self.input_senha)
+
         self.botao = QPushButton("Enviar")
-        self.botao.clicked.connect(self.enviar_nome)
+        self.botao.clicked.connect(self.enviar)
         self.layout.addWidget(self.botao)
 
         self.resposta_label = QLabel("")
@@ -26,10 +32,11 @@ class Interface(QWidget):
 
         self.setLayout(self.layout)
 
-    def enviar_nome(self):
+    def enviar(self):
         nome = self.input_nome.text()
-        if nome:
-            resposta = enviar_nome(nome)
+        senha = self.input_senha.text()
+        if nome and senha:
+            resposta = cliente.login(nome, senha)
             self.resposta_label.setText(resposta)
 
 app = QApplication(sys.argv)

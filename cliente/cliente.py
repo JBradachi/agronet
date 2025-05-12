@@ -32,7 +32,7 @@ def login(nome, senha):
 
     validacao = login_json(nome, senha)
 
-    client.sendall(validacao.encode())
+    client.sendall(validacao)
     resposta = client.recv(BUFSIZE).decode()
 
     client.close()

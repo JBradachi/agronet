@@ -4,6 +4,8 @@ import sqlite3
 import json
 import logging as log
 
+BUFSIZE = 4096
+
 #TODO: coiso pra lidar com concorrencia
 # (talvez fazer uma fila e executar cada Thread uma vez)
 # "listener" não bloqueante joga as conexões numa fila
@@ -27,9 +29,8 @@ class ConnectionHandler:
 
             # A consulta, como descrito em docs/decisoes.md, é um JSON com dois
             # campos: um com a consulta em si e outro com seus parâmetros
-            mensagem = self.conn.recv(1024).decode()
+            mensagem = self.conn.recv(BUFSIZE).decode()
             mensagem = json.loads(mensagem)
-
             # tenta executar a consulta
             try:
                 conn_db = sqlite3.connect('./agronet.db')
@@ -37,8 +38,9 @@ class ConnectionHandler:
 
                 try:
                     dados = cursor.execute(mensagem["consulta"],
-                         parameters=tuple(mensagem["parametros"])).fetchall()
-                except:
+                            tuple(mensagem["parametros"])).fetchall()
+                except Exception as ex:
+                    log.error(ex)
                     log.error("erro ao fazer a consulta")
                     log.error("pode ser a sintaxe")
                     exit(6)
