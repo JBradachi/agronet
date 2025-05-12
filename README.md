@@ -14,12 +14,30 @@ Repositório dedicado ao desenvolvimento do trabalho pratico de sistemas distrib
 - [ ] Cliente
   - [X] Estrutura dos arquivos
   - [ ] Pensar na interface gráfica
-    - [ ] Tela de login / cadastro
+    - [ ] Tela de login / cadastro usuário (cadastro_usuario)
+    - [ ] Cadastro de máquina (cadastro_maquina)
+    - [ ] Cadastro de loja (cadastro_loja)
+    - [ ] Pagina de loja vendedor (ligar/desligar exposição de anuncio)
+    - [ ] Pagina de loja comprador
+    - [ ] Pagina principal
+    - [ ] Pagina de resultado pesquisa produto
+    - [ ] Pagina de resultado pesquisa loja
+    - [ ] Pagina do produto (botão de comprar)
+    - [ ] Pagina de ajuda (ctt dos devs)
 - [ ] Servidor
   - [X] Estrutura dos arquivos
   - [X] Uso de Threads (parcialmente feito)
 - [ ] Estrura das mensagens (como acontecerá a conversa)
   - [ ] "Rotas de requisição"
+    - [X] login (login)
+    - [ ] Cadastro de máquina (cadastro_produto) bradas
+    - [ ] Cadastro de loja (cadastro_loja) dudu
+    - [ ] Cadastro usuário (cadastro_usuario) dudu
+    - [ ] Edita máquina (edita_produto) dudu
+    - [ ] Pagina principal
+      - [ ] get lojas (tipo pedido mostra_lojas, filtro) bradas
+      - [ ] get produtos (tipo pedido mostras_produtos, filtro, opcional loja) dudu
+    - [ ] Pagina produto (info_produto/ imagens_produto) bradas
   - [ ] "Rotas de resposta"
 - [X] Docker
 

@@ -19,11 +19,14 @@ def consulta_json(sql, params):
     consulta = { "consulta" : sql, "parametros" : params }
     return json.dumps(consulta).encode()
 
-def resposta_login_json(ok):
+def resposta_login_json(token):
     # token pode ser 
     # - uma URL segura de 32 caracteres se sucesso no login
     # - valor false se falhou no login
-    resposta = { "token" : ok }
+    if token:
+        resposta = { "token" : token , "status" : 0}
+    else:
+        resposta = { "status" : -1 , "erro" : "Falha no login"}
     return json.dumps(resposta).encode()
 
 # Classe que cria threads e lida com conexões
