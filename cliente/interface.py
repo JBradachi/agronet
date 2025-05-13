@@ -27,6 +27,10 @@ class Interface(QWidget):
         self.botao.clicked.connect(self.enviar)
         self.layout.addWidget(self.botao)
 
+        self.botao2 = QPushButton("testa_envio_produto")
+        self.botao2.clicked.connect(self.envia_produto)
+        self.layout.addWidget(self.botao2)
+
         self.resposta_label = QLabel("")
         self.layout.addWidget(self.resposta_label)
 
@@ -38,6 +42,9 @@ class Interface(QWidget):
         if nome and senha:
             resposta = cliente.login(nome, senha)
             self.resposta_label.setText(resposta)
+
+    def envia_produto(self):
+        resposta = cliente.insere_produto()
 
 app = QApplication(sys.argv)
 janela = Interface()

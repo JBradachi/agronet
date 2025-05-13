@@ -29,6 +29,7 @@ class ConnectionHandler:
 
             # A consulta, como descrito em docs/decisoes.md, é um JSON com dois
             # campos: um com a consulta em si e outro com seus parâmetros
+
             mensagem = self.conn.recv(BUFSIZE).decode()
             mensagem = json.loads(mensagem)
             # tenta executar a consulta
@@ -53,8 +54,9 @@ class ConnectionHandler:
             dados_json = json.dumps(dados)
             self.conn.sendall(dados_json.encode())
             self.conn.close()
-        except:
+        except Exception as e:
             log.error("erro na tread de resposta")
+            log.error(e)
             exit(5)
 
     def handle_padrao(self, mensagem):
@@ -80,7 +82,7 @@ class ConnectionHandler:
         
         try:
             nome_imagem = mensagem["parametros"][0]
-            with open(nome_imagem, 'wb') as f:
+            with open(f"static/{nome_imagem}", 'wb') as f:
                 while True:
                     bin_img = self.conn.recv(BUFSIZE)
                     if not bin_img:

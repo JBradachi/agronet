@@ -30,13 +30,12 @@ CREATE TABLE IF NOT EXISTS Empresa (
 -- Tabela de modelos de máquina: nome, descrição
 -- Cada modelo é produzido por uma empresa específica
 CREATE TABLE IF NOT EXISTS Modelo (
-  id INTEGER AUTO_INCREMENT,
   fabricante INTEGER AUTO_INCREMENT,
 
   nome TEXT NOT NULL,
   descricao TEXT NOT NULL,
 
-  PRIMARY KEY (id),
+  PRIMARY KEY (nome),
   FOREIGN KEY (fabricante) REFERENCES Empresa (nome)
 );
 
@@ -45,7 +44,7 @@ CREATE TABLE IF NOT EXISTS Modelo (
 -- Cada máquina é vendida por uma loja específica
 CREATE TABLE IF NOT EXISTS Maquina (
   id INTEGER AUTO_INCREMENT,
-  loja INTEGER NOT NULL,
+  loja TEXT NOT NULL,
   modelo INTEGER NOT NULL,
   imagem TEXT NOT NULL,
   preco REAL NOT NULL,
@@ -54,8 +53,8 @@ CREATE TABLE IF NOT EXISTS Maquina (
   visivel INTEGER DEFAULT 1 NOT NULL,
 
   PRIMARY KEY (id),
-  FOREIGN KEY (loja) REFERENCES Loja (id),
-  FOREIGN KEY (modelo) REFERENCES Modelo (id)
+  FOREIGN KEY (loja) REFERENCES Loja (nome),
+  FOREIGN KEY (modelo) REFERENCES Modelo (nome)
 );
 
 INSERT INTO Loja (nome, dia_criacao, mes_criacao, ano_criacao,
@@ -74,4 +73,4 @@ INSERT INTO Modelo (fabricante, nome, descricao) VALUES
     'Linha de produto:	tratores agrícolas, Número de série	D049045, Número de catálogo	473575');
 
 INSERT INTO Maquina (loja, modelo, imagem, preco, mes_fabricacao, ano_fabricacao) VALUES
-  (1, 1, 'static/CAT1.png', 394.23, 2, 2013);
+  ("adminStore", "Challenger MT525D 4WD", 'static/CAT1.png', 394.23, 2, 2013);

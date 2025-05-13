@@ -64,7 +64,11 @@ class ConnectionHandler:
         try:
             self.conn_db = setup_database_connection()
             while True:
-                pedido_json = self.conn.recv(BUFSIZE).decode()
+                try:
+                    pedido_json = self.conn.recv(BUFSIZE).decode()
+                except Exception as e:
+                    log.error("erro na decodificação do pedido")
+                    log.error(e)
                 if not pedido_json:
                     break # conexão encerrada
                 pedido = json.loads(pedido_json)
@@ -80,6 +84,7 @@ class ConnectionHandler:
                         if ok: self.conn.sendall(ok_resp())
                     case "cadastro_produto":
                         ok = self.handle_produto(pedido)
+                        if ok: self.conn.sendall(ok_resp())
                     case _:
                         log.error("tipo de pedido não reconhecido")
                 if not ok:
@@ -138,21 +143,21 @@ class ConnectionHandler:
     # "preco" : <preco>, "mes_fabricacao" : <mes_fabricacao>,
     # "ano_fabricacao" : <ano_fabricacao>, "imagem" : <nome_imagem> }
     def handle_produto(self, dados):
-        if not self.token:
-            log.error("Usuário não logado, favor logar")
-            return
+        # if not self.token:
+        #     log.error("Usuário não logado, favor logar")
+        #     return
 
-        if not self.loja:
-            log.error("Usuário não possui loja")
-            return
+        # if not self.loja:
+        #     log.error("Usuário não possui loja")
+        #     return
 
         modelo = dados["modelo"]
         preco = dados["preco"]
         mes_fabricacao = dados["mes_fabricacao"]
         ano_fabricacao = dados["ano_fabricacao"]
         nome_imagem = dados["imagem"]
-        loja = self.loja
-
+        # loja = self.loja
+        loja = "adminStore"
         
         params = (nome_imagem, loja, modelo, preco, 
                 mes_fabricacao, ano_fabricacao)
@@ -185,3 +190,5 @@ class ConnectionHandler:
         except:
             log.error("erro no envio da imagem")
             exit(4)
+        
+        return True
