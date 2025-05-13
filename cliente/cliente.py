@@ -12,31 +12,34 @@ def login_json(nome, senha):
     envelope = { "tipo_pedido" : "login", "nome" : nome, "senha" : senha }
     return json.dumps(envelope).encode()
 
-def enviar_nome(nome):
+def edita_produto_json(id, visivel):
+    visivel = 1 if visivel else 0
+    envelope = {
+        "tipo_pedido" : "edita_produto",
+        "id" : id,
+        "visivel" : visivel,
+    }
+    return json.dumps(envelope).encode()
+
+# ------------------------------------------------------------------------------
+
+def simple_request(msg):
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     logging.info(f"Conectando ao servidor {HOST}:{PORT}...")
-
     client.connect((HOST, PORT))
+    client.sendall(msg)
 
-    client.sendall(nome.encode())
     resposta = client.recv(BUFSIZE).decode()
-
     client.close()
     return resposta
+
+def enviar_nome(nome):
+    return simple_request(nome.encode())
 
 def login(nome, senha):
-    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    logging.info(f"Conectando ao servidor {HOST}:{PORT}...")
+    msg = login_json(nome, senha)
+    return simple_request(msg)
 
-    client.connect((HOST, PORT))
-
-    validacao = login_json(nome, senha)
-
-    client.sendall(validacao)
-    resposta = client.recv(BUFSIZE).decode()
-
-    client.close()
-    return resposta
-
-
-
+def edita_produto(id, visivel):
+    msg = edita_produto_json(id, visivel)
+    return simple_request(msg)
