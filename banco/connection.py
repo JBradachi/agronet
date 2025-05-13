@@ -34,18 +34,17 @@ class ConnectionHandler:
             # tenta executar a consulta
             try:
                 conn_db = sqlite3.connect('./agronet.db')
-                cursor = conn_db.cursor()
-
-                try:
-                    dados = cursor.execute(mensagem["consulta"],
-                            tuple(mensagem["parametros"])).fetchall()
-                except Exception as ex:
-                    log.error(ex)
-                    log.error("erro ao fazer a consulta")
-                    log.error("pode ser a sintaxe")
-                    exit(6)
-
-                cursor.close()
+                self.cursor = conn_db.cursor()
+                match mensagem["tipo_consulta"]:
+                    case "padrao":
+                        dados = self.handle_padrao(mensagem)
+                    case "insere_imagem":
+                        dados = self.handle_insere_imagem(mensagem, conn_db)
+                    case "requisita_produto":
+                        pass
+                    case _:
+                        log.error("tipo de consulta não reconhecida")
+                self.cursor.close()
             except:
                 log.error("erro ao fazer a consulta")
                 exit(4)
@@ -57,3 +56,39 @@ class ConnectionHandler:
         except:
             log.error("erro na tread de resposta")
             exit(5)
+
+    def handle_padrao(self, mensagem):
+        try:
+            dados = self.cursor.execute(mensagem["consulta"],
+                            tuple(mensagem["parametros"])).fetchall()
+            return dados
+        except Exception as ex:
+            log.error(ex)
+            log.error("erro ao fazer a consulta")
+            log.error("pode ser a sintaxe")
+            exit(6)
+
+    def handle_insere_imagem(self, mensagem, conn_db:sqlite3.Connection):
+        try:
+            self.cursor.execute(mensagem["consulta"],
+                            tuple(mensagem["parametros"])).fetchall()
+        except Exception as ex:
+            log.error(ex)
+            log.error("erro ao fazer a consulta")
+            log.error("pode ser a sintaxe")
+            exit(6)
+        
+        try:
+            nome_imagem = mensagem["parametros"][0]
+            with open(nome_imagem, 'wb') as f:
+                while True:
+                    bin_img = self.conn.recv(BUFSIZE)
+                    if not bin_img:
+                        break
+                    f.write(bin_img)
+        except:
+            log.error("erro no recebimento da imagem")
+            exit(4)
+        
+        conn_db.commit()
+        return True

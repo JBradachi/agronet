@@ -16,7 +16,18 @@ def setup_database_connection():
     return conn_db
 
 def consulta_json(sql, params):
-    consulta = { "consulta" : sql, "parametros" : params }
+    consulta = { "tipo_consulta" : "padrao", "consulta" : sql, 
+                "parametros" : params }
+    return json.dumps(consulta).encode()
+
+def insere_imagem_json(sql, params):
+    consulta = { "tipo_consulta" : "insere_imagem", "consulta" : sql, 
+                "parametros" : params }
+    return json.dumps(consulta).encode()
+
+def requisita_imagem_json(sql, params):
+    consulta = { "tipo_consulta" : "requisita_produto", "consulta" : sql, 
+                "parametros" : params }
     return json.dumps(consulta).encode()
 
 def resposta_login_json(token):
@@ -63,7 +74,7 @@ class ConnectionHandler:
                         resposta = resposta_login_json(ok)
                         self.conn.sendall(resposta)
                     case "cadastro_produto":
-                        ok = 1
+                        ok = self.handle_produto(pedido)
                     case _:
                         log.error("tipo de pedido não reconhecido")
                 if not ok:
@@ -81,7 +92,7 @@ class ConnectionHandler:
         senha = dados["senha"]
         # O usuário existe com essa senha no banco de dados?
         mensagem = consulta_json(
-                "SELECT * FROM Usuario "
+                "SELECT loja FROM Usuario "
                 "WHERE nome = ? AND senha = ?", (nome, senha))
         try:
             self.conn_db.sendall(mensagem)
@@ -92,6 +103,7 @@ class ConnectionHandler:
                 return False
             self.token = secrets.token_urlsafe(16)
             self.user = nome
+            self.loja = resposta_db[0][0] # salva a loja do usuário
             return self.token # deu bom, retorna token!
         except:
             log.error("erro na comunicação com o servidor de dados")
@@ -99,27 +111,34 @@ class ConnectionHandler:
 
     # { "tipo_pedido" : "cadastro_produto", "modelo" : <modelo>, 
     # "preco" : <preco>, "mes_fabricacao" : <mes_fabricacao>,
-    # "ano_fabricacao" : <ano_fabricacao>, "loja" : <loja>, 
-    # "imagem" : <nome_imagem> }
+    # "ano_fabricacao" : <ano_fabricacao>, "imagem" : <nome_imagem> }
     def handle_produto(self, dados):
+        if not self.token:
+            log.error("Usuário não logado, favor logar")
+            return
+
+        if not self.loja:
+            log.error("Usuário não possui loja")
+            return
 
         modelo = dados["modelo"]
         preco = dados["preco"]
         mes_fabricacao = dados["mes_fabricacao"]
         ano_fabricacao = dados["ano_fabricacao"]
         nome_imagem = dados["imagem"]
-        loja = dados["loja"]
+        loja = self.loja
+
         
-        params = (loja, modelo, nome_imagem, preco, 
+        params = (nome_imagem, loja, modelo, preco, 
                 mes_fabricacao, ano_fabricacao)
         
         #TODO: função que verifica se existe imagem de nome igual 
         # e muda nome se tiver antes de mandar pro banco
         #TODO: self guardar a loja do usuário, (se tiver)
-        #TODO: banco ter um tipo pedido tambem: insercao e consulta
-        mensagem = consulta_json(
+        #TODO: banco ter um tipo pedido tambem: recebe_imagem e consulta
+        mensagem = insere_imagem_json(
             "INSERT INTO Maquina "
-            "(loja, modelo, imagem, preco, mes_fabricacao, ano_fabricacao) "
+            "(imagem, loja, modelo, preco, mes_fabricacao, ano_fabricacao) "
             "VALUES (?, ?, ?, ?, ?, ?)", params)
 
         try:
