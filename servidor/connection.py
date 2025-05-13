@@ -62,6 +62,8 @@ class ConnectionHandler:
                         ok = self.handle_login(pedido)
                         resposta = resposta_login_json(ok)
                         self.conn.sendall(resposta)
+                    case "cadastro_produto":
+                        ok = 1
                     case _:
                         log.error("tipo de pedido não reconhecido")
                 if not ok:
@@ -93,4 +95,49 @@ class ConnectionHandler:
             return self.token # deu bom, retorna token!
         except:
             log.error("erro na comunicação com o servidor de dados")
+            exit(4)
+
+    # { "tipo_pedido" : "cadastro_produto", "modelo" : <modelo>, 
+    # "preco" : <preco>, "mes_fabricacao" : <mes_fabricacao>,
+    # "ano_fabricacao" : <ano_fabricacao>, "loja" : <loja>, 
+    # "imagem" : <nome_imagem> }
+    def handle_produto(self, dados):
+
+        modelo = dados["modelo"]
+        preco = dados["preco"]
+        mes_fabricacao = dados["mes_fabricacao"]
+        ano_fabricacao = dados["ano_fabricacao"]
+        nome_imagem = dados["imagem"]
+        loja = dados["loja"]
+        
+        params = (loja, modelo, nome_imagem, preco, 
+                mes_fabricacao, ano_fabricacao)
+        
+        #TODO: função que verifica se existe imagem de nome igual 
+        # e muda nome se tiver antes de mandar pro banco
+        #TODO: self guardar a loja do usuário, (se tiver)
+        #TODO: banco ter um tipo pedido tambem: insercao e consulta
+        mensagem = consulta_json(
+            "INSERT INTO Maquina "
+            "(loja, modelo, imagem, preco, mes_fabricacao, ano_fabricacao) "
+            "VALUES (?, ?, ?, ?, ?, ?)", params)
+
+        try:
+            # tenta inserir os dados 
+            self.conn_db.sendall(mensagem)
+        except:
+            log.error("erro na comunicação com o servidor de dados")
+            log.error("handle_produto, inserção de dados no banco")
+            exit(4)
+
+        # se consegue inserir recebe o binário da imagem 
+        # e repassa para o servidor de dados
+        try:    
+            while True:
+                bin_img = self.conn.recv(BUFSIZE)
+                if not bin_img:
+                    break
+                self.conn_db.sendall(bin_img)
+        except:
+            log.error("erro no envio da imagem")
             exit(4)
