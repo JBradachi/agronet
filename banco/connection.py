@@ -35,7 +35,6 @@ class ConnectionHandler:
             try:
                 conn_db = sqlite3.connect('./agronet.db')
                 cursor = conn_db.cursor()
-
                 try:
                     dados = cursor.execute(mensagem["consulta"],
                             tuple(mensagem["parametros"])).fetchall()

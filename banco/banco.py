@@ -10,7 +10,6 @@ PORT = 3600
 log.basicConfig(level=log.INFO)
 
 def main():
-
     # Associa uma porta ao socket de escuta do sistema
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.bind((HOST, PORT))

@@ -20,14 +20,16 @@ def consulta_json(sql, params):
     return json.dumps(consulta).encode()
 
 def resposta_login_json(token):
-    # token pode ser 
+    # token pode ser
     # - uma URL segura de 32 caracteres se sucesso no login
     # - valor false se falhou no login
-    if token:
-        resposta = { "token" : token , "status" : 0}
-    else:
-        resposta = { "status" : -1 , "erro" : "Falha no login"}
+    if token: resposta = { "token" : token , "status" : 0}
+    else: resposta = { "status" : -1 , "erro" : "Falha no login" }
     return json.dumps(resposta).encode()
+
+def ok_resp():
+    resp = { "status" : 0 }
+    return json.dumps(resp).encode()
 
 # Classe que cria threads e lida com conexões
 class ConnectionHandler:
@@ -62,6 +64,9 @@ class ConnectionHandler:
                         ok = self.handle_login(pedido)
                         resposta = resposta_login_json(ok)
                         self.conn.sendall(resposta)
+                    case "edita_produto":
+                        ok = self.handle_edita_produto(pedido)
+                        if ok: self.conn.sendall(ok_resp())
                     case _:
                         log.error("tipo de pedido não reconhecido")
                 if not ok:
@@ -94,3 +99,23 @@ class ConnectionHandler:
         except:
             log.error("erro na comunicação com o servidor de dados")
             exit(4)
+
+    # { "tipo_pedido" : "edita_produto", "id" : <id>, "visivel" : bool}
+    def handle_edita_produto(self, dados):
+        id_maquina = dados["id"]
+        visivel = 1 if dados["visivel"] else 0
+        mensagem = consulta_json(
+                "UPDATE Maquina "
+                "SET visivel = ? "
+                "WHERE id = ?", (id_maquina, visivel))
+        try:
+            self.conn_db.sendall(mensagem)
+            # Não acho que a resposta do banco interessa muito nesse caso,
+            # então simplesmente não faço nada com ela
+            self.conn_db.recv(BUFSIZE).decode()
+            return True
+        except:
+            log.error("erro na comunicação com o servidor de dados")
+            exit(4)
+
+

@@ -51,6 +51,7 @@ CREATE TABLE IF NOT EXISTS Maquina (
   preco REAL NOT NULL,
   mes_fabricacao INTEGER NOT NULL,
   ano_fabricacao INTEGER NOT NULL,
+  visivel INTEGER DEFAULT 1 NOT NULL,
 
   PRIMARY KEY (id),
   FOREIGN KEY (loja) REFERENCES Loja (id),
