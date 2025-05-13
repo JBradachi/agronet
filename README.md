@@ -31,9 +31,9 @@ Repositório dedicado ao desenvolvimento do trabalho pratico de sistemas distrib
   - [ ] "Rotas de requisição"
     - [X] login (login)
     - [ ] Cadastro de máquina (cadastro_produto) bradas
-    - [ ] Cadastro de loja (cadastro_loja) dudu
+    - [X] Cadastro de loja (cadastro_loja) dudu
     - [ ] Cadastro usuário (cadastro_usuario) dudu
-    - [ ] Edita máquina (edita_produto) dudu
+    - [X] Edita máquina (edita_produto) dudu
     - [ ] Pagina principal
       - [ ] get lojas (tipo pedido mostra_lojas, filtro) bradas
       - [ ] get produtos (tipo pedido mostras_produtos, filtro, opcional loja) dudu

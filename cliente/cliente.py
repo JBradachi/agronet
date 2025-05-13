@@ -12,6 +12,20 @@ def login_json(nome, senha):
     envelope = { "tipo_pedido" : "login", "nome" : nome, "senha" : senha }
     return json.dumps(envelope).encode()
 
+def cadastra_loja_json(nome, dia_criacao, mes_criacao, ano_criacao,
+   cidade, estado, descricao):
+    envelope = {
+        "tipo_pedido" : "cadastra_loja",
+        "nome" : nome,
+        "dia_criacao" : dia_criacao,
+        "mes_criacao" : mes_criacao,
+        "ano_criacao" : ano_criacao,
+        "cidade" : cidade,
+        "estado" : estado,
+        "descricao" : descricao,
+    }
+    return json.dumps(envelope).encode()
+
 def edita_produto_json(id, visivel):
     visivel = 1 if visivel else 0
     envelope = {
@@ -38,6 +52,12 @@ def enviar_nome(nome):
 
 def login(nome, senha):
     msg = login_json(nome, senha)
+    return simple_request(msg)
+
+def cadastra_loja(nome, dia_criacao, mes_criacao, ano_criacao,
+    cidade, estado, descricao):
+    msg = cadastra_loja_json(nome, dia_criacao, mes_criacao, ano_criacao,
+        cidade, estado, descricao)
     return simple_request(msg)
 
 def edita_produto(id, visivel):
