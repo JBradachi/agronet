@@ -11,6 +11,10 @@ BUFSIZE = 4096
 # "listener" não bloqueante joga as conexões numa fila
 # executa uma thread por vez
 
+def ok_resp():
+    resp = { "status" : 0 }
+    return json.dumps(resp).encode()
+
 class ConnectionHandler:
     def __init__(self, conn, addr):
         try:
@@ -32,6 +36,7 @@ class ConnectionHandler:
 
             mensagem = self.conn.recv(BUFSIZE).decode()
             mensagem = json.loads(mensagem)
+            log.info(mensagem)
             # tenta executar a consulta
             try:
                 conn_db = sqlite3.connect('./agronet.db')
@@ -53,6 +58,7 @@ class ConnectionHandler:
             # devolve a consulta em JSON
             dados_json = json.dumps(dados)
             self.conn.sendall(dados_json.encode())
+            log.info("Fecha conexão thread")
             self.conn.close()
         except Exception as e:
             log.error("erro na tread de resposta")
@@ -80,6 +86,8 @@ class ConnectionHandler:
             log.error("pode ser a sintaxe")
             exit(6)
         
+        self.conn.sendall(ok_resp())
+
         try:
             nome_imagem = mensagem["parametros"][0]
             with open(f"static/{nome_imagem}", 'wb') as f:
@@ -91,6 +99,6 @@ class ConnectionHandler:
         except:
             log.error("erro no recebimento da imagem")
             exit(4)
-        
+        log.info("Enviou a imagem")
         conn_db.commit()
-        return True
+        return ok_resp()

@@ -150,7 +150,6 @@ class ConnectionHandler:
         # if not self.loja:
         #     log.error("Usuário não possui loja")
         #     return
-
         modelo = dados["modelo"]
         preco = dados["preco"]
         mes_fabricacao = dados["mes_fabricacao"]
@@ -178,17 +177,21 @@ class ConnectionHandler:
             log.error("erro na comunicação com o servidor de dados")
             log.error("handle_produto, inserção de dados no banco")
             exit(4)
+        # se tudo certo, pede para o cliente enviar a imagem
+        self.conn.sendall(ok_resp())
 
         # se consegue inserir recebe o binário da imagem 
         # e repassa para o servidor de dados
-        try:    
-            while True:
-                bin_img = self.conn.recv(BUFSIZE)
-                if not bin_img:
-                    break
-                self.conn_db.sendall(bin_img)
-        except:
-            log.error("erro no envio da imagem")
-            exit(4)
+        ok = json.loads(self.conn_db.recv(BUFSIZE).decode())
+        if ok:
+            try:    
+                while True:
+                    bin_img = self.conn.recv(BUFSIZE)
+                    if not bin_img:
+                        break
+                    self.conn_db.sendall(bin_img)
+            except:
+                log.error("erro no envio da imagem")
+                exit(4)
         
         return True

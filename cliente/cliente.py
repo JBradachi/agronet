@@ -45,6 +45,7 @@ def simple_request(msg):
     client.sendall(msg)
 
     resposta = client.recv(BUFSIZE).decode()
+    resposta = json.loads(resposta)
     client.close()
     return resposta
 
@@ -55,19 +56,23 @@ def insert_product_request(msg):
     client.sendall(msg)
     
     nome_imagem = json.loads(msg.decode())["imagem"]
-    try:
-        with open(nome_imagem, 'rb') as f:
-            while True:
-                data = f.read(BUFSIZE)
-                if not data:
-                    break
-                client.sendall(data)
 
-    except Exception as e:
-        log.error(e)
-        log.error("falha ao abrir a imagem")
+    ok = json.loads(client.recv(BUFSIZE).decode())
+    if ok["status"] == 0 :
+        try:
+            with open(nome_imagem, 'rb') as f:
+                while True:
+                    data = f.read(BUFSIZE)
+                    if not data:
+                        break
+                    client.sendall(data)
+
+        except Exception as e:
+            log.error(e)
+            log.error("falha ao abrir a imagem")
     
     resposta = client.recv(BUFSIZE).decode()
+    resposta = json.loads(resposta)
     client.close()
     return resposta
 
