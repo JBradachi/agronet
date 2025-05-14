@@ -133,7 +133,6 @@ class ConnectionHandler:
             self.conn_db.send_dict(mensagem)
 
             resposta_db = self.conn_db.recv_dict()
-            log.info("recebeu resposta", resposta_db, resposta_db["resultado"])
             #TODO: abubleblé 
             if not resposta_db or not resposta_db["resultado"][0]:
                 # sem resposta do banco => não existe tal usuário
