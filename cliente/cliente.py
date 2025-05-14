@@ -54,54 +54,55 @@ def insere_produto_json(imagem):
 
 # ------------------------------------------------------------------------------
 
-def simple_request(msg):
-    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    log.info(f"Conectando ao servidor {HOST}:{PORT}...")
-    client.connect((HOST, PORT))
-    client.sendall(msg)
+class Cliente:
+    def __init__(self):
+        self.socket = None
 
-    resposta = client.recv(BUFSIZE).decode()
-    if not resposta: return "nada"
+    def setup_socket(self):
+        try:
+            self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            log.info(f"Conectando ao servidor {HOST}:{PORT}...")
+            self.socket.connect((HOST, PORT))
+        except:
+            log.error("Não foi possível conectar ao servidor")
+            exit(64)
 
-    resposta = json.loads(resposta)
-    client.close()
-    return f"{resposta}"
 
-def insert_product_request(msg):
-    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    log.info(f"Conectando ao servidor {HOST}:{PORT}...")
-    client.connect((HOST, PORT))
-    client.sendall(msg)
+    def request(self, msg):
+        if not self.socket:
+            self.setup_socket()
+        self.socket.sendall(msg)
 
-    resposta = client.recv(BUFSIZE).decode()
-    resposta = json.loads(resposta)
-    client.close()
-    return f"{resposta}"
+        resposta = self.socket.recv(BUFSIZE).decode()
+        if not resposta: return "nada"
 
-def enviar_nome(nome):
-    return simple_request(nome.encode())
+        resposta = json.loads(resposta)
+        return f"{resposta}"
 
-def login(nome, senha):
-    msg = login_json(nome, senha)
-    return simple_request(msg)
+    def enviar_nome(self, nome):
+        return self.request(nome.encode())
 
-def cadastra_loja(nome, dia_criacao, mes_criacao, ano_criacao,
-    cidade, estado, descricao):
-    msg = cadastra_loja_json(nome, dia_criacao, mes_criacao, ano_criacao,
-        cidade, estado, descricao)
-    return simple_request(msg)
+    def login(self, nome, senha):
+        msg = login_json(nome, senha)
+        return self.request(msg)
 
-def edita_produto(id, visivel):
-    msg = edita_produto_json(id, visivel)
-    return simple_request(msg)
+    def cadastra_loja(self, nome, dia_criacao, mes_criacao, ano_criacao,
+        cidade, estado, descricao):
+        msg = cadastra_loja_json(nome, dia_criacao, mes_criacao, ano_criacao,
+            cidade, estado, descricao)
+        return self.request(msg)
 
-def insere_produto():
-    try:
-        msg = b''
-        with open("gato.png", 'rb') as f:
-            img_b64 = base64.b64encode(f.read()).decode('utf-8')
-            msg = insere_produto_json(img_b64)
-        return insert_product_request(msg)
-    except Exception as e:
-        log.error(e)
-        log.error("falha em insere_produto")
+    def edita_produto(self, id, visivel):
+        msg = edita_produto_json(id, visivel)
+        return self.request(msg)
+
+    def insere_produto(self):
+        try:
+            msg = b''
+            with open("gato.png", 'rb') as f:
+                img_b64 = base64.b64encode(f.read()).decode('utf-8')
+                msg = insere_produto_json(img_b64)
+            return self.request(msg)
+        except Exception as e:
+            log.error(e)
+            log.error("falha em insere_produto")

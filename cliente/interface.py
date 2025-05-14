@@ -1,10 +1,11 @@
 import sys
 from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton
-import cliente
+from cliente import Cliente
 
 class Interface(QWidget):
     def __init__(self):
         super().__init__()
+        self.cliente = Cliente()
 
         self.setWindowTitle("Cliente PyQt")
         self.setGeometry(100, 100, 300, 150)
@@ -40,13 +41,17 @@ class Interface(QWidget):
         nome = self.input_nome.text()
         senha = self.input_senha.text()
         if nome and senha:
-            resposta = cliente.login(nome, senha)
+            resposta = self.cliente.login(nome, senha)
             self.resposta_label.setText(resposta)
 
     def envia_produto(self):
-        resposta = cliente.insere_produto()
+        resposta = self.cliente.insere_produto()
 
-app = QApplication(sys.argv)
-janela = Interface()
-janela.show()
-sys.exit(app.exec())
+def main():
+    app = QApplication(sys.argv)
+    janela = Interface()
+    janela.show()
+    sys.exit(app.exec())
+
+if __name__ == "__main__":
+    main()
