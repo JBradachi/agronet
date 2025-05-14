@@ -45,8 +45,8 @@ def consulta_json(sql, params):
 
 def insere_imagem_json(sql, params, base64_img, nome_imagem):
     consulta = { "tipo_consulta" : "insere_imagem", "consulta" : sql,
-                "parametros" : params , "imagem" : base64_img,
-                "nome_imagem" : nome_imagem
+                "parametros" : params , "imagem_conteudo" : base64_img,
+                "imagem" : nome_imagem
                 }
     return monta_frame(consulta)
 
@@ -220,8 +220,8 @@ class ConnectionHandler:
 
     # { "tipo_pedido" : "cadastro_produto", "modelo" : <modelo>,
     # "preco" : <preco>, "mes_fabricacao" : <mes_fabricacao>,
-    # "ano_fabricacao" : <ano_fabricacao>, "nome_imagem" : <nome_imagem>
-    # "imagem" : base64_img }
+    # "ano_fabricacao" : <ano_fabricacao>, "imagem" : <nome_imagem>
+    # "imagem_conteudo" : base64_img }
     def handle_produto(self, dados):
         # if not self.token:
         #     log.error("Usuário não logado, favor logar")
@@ -234,8 +234,8 @@ class ConnectionHandler:
         preco = dados["preco"]
         mes_fabricacao = dados["mes_fabricacao"]
         ano_fabricacao = dados["ano_fabricacao"]
-        nome_imagem = dados["nome_imagem"]
-        imagem = dados["imagem"]
+        nome_imagem = dados["imagem"]
+        imagem_conteudo = dados["imagem_conteudo"]
         # loja = self.loja
         loja = "adminStore"
 
@@ -249,7 +249,7 @@ class ConnectionHandler:
         mensagem = insere_imagem_json(
             "INSERT INTO Maquina "
             "(imagem, loja, modelo, preco, mes_fabricacao, ano_fabricacao) "
-            "VALUES (?, ?, ?, ?, ?, ?)", params, imagem, nome_imagem)
+            "VALUES (?, ?, ?, ?, ?, ?)", params, imagem_conteudo, nome_imagem)
 
         try:
             # tenta inserir os dados

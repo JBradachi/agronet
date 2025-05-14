@@ -138,8 +138,10 @@ class ConnectionHandler:
     def handle_insere_imagem(self, mensagem):
         self.exec_query(mensagem)
         try:
-            with open(f"static/{mensagem['nome_imagem']}", 'wb') as f:
-                f.write(base64.b64decode(mensagem['imagem']))
+            nome_imagem = mensagem['imagem']
+            imagem = mensagem['imagem_conteudo']
+            with open(f"static/{nome_imagem}", 'wb') as f:
+                f.write(base64.b64decode(imagem))
         except:
             log.error("erro no recebimento da imagem")
             exit(4)

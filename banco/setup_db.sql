@@ -30,8 +30,7 @@ CREATE TABLE IF NOT EXISTS Empresa (
 -- Tabela de modelos de máquina: nome, descrição
 -- Cada modelo é produzido por uma empresa específica
 CREATE TABLE IF NOT EXISTS Modelo (
-  fabricante INTEGER AUTO_INCREMENT,
-
+  fabricante TEXT NOT NULL,
   nome TEXT NOT NULL,
   descricao TEXT NOT NULL,
 

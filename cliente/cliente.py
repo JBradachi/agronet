@@ -65,8 +65,8 @@ def insere_produto_json(imagem, modelo, preco, mes_fabricacao, ano_fabricacao,
         "preco" : preco,
         "mes_fabricacao" : mes_fabricacao,
         "ano_fabricacao" : ano_fabricacao,
-        "nome_imagem" : nome_imagem,
-        "imagem" : imagem
+        "imagem" : nome_imagem,
+        "imagem_conteudo" : imagem
     }
     return monta_frame(envelope)
 
