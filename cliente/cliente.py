@@ -10,10 +10,10 @@ BUFSIZE = 4096
 log.basicConfig(level=log.INFO)
 
 def login_json(nome, senha):
-    envelope = { 
-        "tipo_pedido" : "login", 
-        "nome" : nome, 
-        "senha" : senha 
+    envelope = {
+        "tipo_pedido" : "login",
+        "nome" : nome,
+        "senha" : senha
     }
     return json.dumps(envelope).encode()
 
@@ -41,14 +41,14 @@ def edita_produto_json(id, visivel):
     return json.dumps(envelope).encode()
 
 def insere_produto_json(imagem):
-    envelope = { 
-        "tipo_pedido" : "cadastro_produto", 
-        "modelo" : "Challenger MT525D 4WD", 
-        "preco" : 77.8, 
+    envelope = {
+        "tipo_pedido" : "cadastro_produto",
+        "modelo" : "Challenger MT525D 4WD",
+        "preco" : 77.8,
         "mes_fabricacao" : 2,
-        "ano_fabricacao" : 2004, 
+        "ano_fabricacao" : 2004,
         "nome_imagem" : "gato.png",
-        "imagem" : imagem 
+        "imagem" : imagem
     }
     return json.dumps(envelope).encode()
 
@@ -61,8 +61,9 @@ def simple_request(msg):
     client.sendall(msg)
 
     resposta = client.recv(BUFSIZE).decode()
+    if not resposta: return "nada"
+
     resposta = json.loads(resposta)
-    
     client.close()
     return f"{resposta}"
 
@@ -71,7 +72,7 @@ def insert_product_request(msg):
     log.info(f"Conectando ao servidor {HOST}:{PORT}...")
     client.connect((HOST, PORT))
     client.sendall(msg)
-    
+
     resposta = client.recv(BUFSIZE).decode()
     resposta = json.loads(resposta)
     client.close()

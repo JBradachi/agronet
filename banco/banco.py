@@ -1,13 +1,20 @@
 import socket
 import sqlite3
 import utils as db
-from connection import ConnectionHandler
 import logging as log
+from connection import ConnectionHandler
 
 HOST = "127.0.0.2"
 PORT = 3600
 
 log.basicConfig(level=log.INFO)
+
+def setup_database(conn_db):
+    cur = conn_db.cursor()
+    # Verifica se o banco já existe, criando-o caso não
+    if not db.test_database(cur):
+        db.setup_database(cur)
+    cur.close()
 
 def main():
     # Associa uma porta ao socket de escuta do sistema
@@ -16,16 +23,11 @@ def main():
     server.listen()
 
     log.info(f"Servidor de dados ouvindo em {HOST}:{PORT}")
-
-    # cria o banco e insere informações base
     try:
+        # Cria o banco e insere informações base
         conn_db = sqlite3.connect('./agronet.db')
-        cursor = conn_db.cursor()
-        # verifica se o banco já existe
-        if not db.test_database(cursor):
-            # se não existe cria um novo
-            db.setup_database(cursor)
-        cursor.close()
+        setup_database(conn_db)
+        conn_db.close()
     except:
         log.error("Erro na conexão do banco")
         exit(1)
