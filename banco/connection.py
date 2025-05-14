@@ -1,43 +1,18 @@
-import json
 import base64
 import sqlite3
 import logging as log
-import struct
-
-BUFSIZE = 8192
-PAYLOAD_SIZE = struct.calcsize("!Q")
-
-#TODO: coiso pra lidar com concorrencia
-# (talvez fazer uma fila e executar cada Thread uma vez)
-# "listener" não bloqueante joga as conexões numa fila
-# executa uma thread por vez
 from threading import Thread
 
-def monta_frame(resposta):
-    res_json = json.dumps(resposta).encode()
-    tamanho_msg = struct.pack("!Q", len(res_json))
-
-    frame = tamanho_msg+res_json
-    return frame
-
-def receba(socket):
-    # pega o tamanho fixo de long long int para pegar
-    # o tamanho da mensagem, com o tamanho da mensagem
-    # em mãos, pega a mensagem
-    msg_size = socket.recv(PAYLOAD_SIZE)
-    if not msg_size:
-        return msg_size
-    msg_size = struct.unpack("!Q", msg_size)[0]
-
-    resposta = socket.recv(msg_size).decode()
-    return resposta
-
-def ok_resp():
-    resposta = { "status" : 0 }
-    return monta_frame(resposta)
+from protocolo.protocolo import JsonTSocket
 
 class ConnectionHandler:
-    def __init__(self, conn, addr):
+    def __init__(self, conn: JsonTSocket, addr):
+        # Inicializa dicionário de métodos
+        self.handlers = {
+            "padrao" : self.handle_padrao,
+            "insere_imagem" : self.handle_insere_imagem,
+        }
+
         try:
             self.conn = conn
             self.addr_cliente = addr
@@ -47,103 +22,85 @@ class ConnectionHandler:
             log.error("erro na criação da tread")
             exit(3)
 
-    def send_as_json(self, msg):
-        try:
-            if "status" not in msg:
-                msg["status"] = 0 # assume que é ok
-            msg_json = json.dumps(msg)
-            self.conn.sendall(msg_json.encode())
-            self.conn.close()
-        except Exception as e:
-            log.info("Erro ao devolver a consulta JSON")
-            log.info(e)
-
     # Thread
     def run(self):
-        try:
+        while True:
             log.info(f"Conexão recebida de {self.addr_cliente}")
-            # A consulta em si é um JSON com três campos: consulta, o SQL em si,
-            # parametros, que contém os parâmetros da consulta, e tipo_mensagem,
-            # cujo valor pode implicar a existência de campos adicionais
+
+            # A mensagem recibida, no formato JsonT, possui três campos:
+            # consulta, o SQL em si, parametros, que contém os parâmetros
+            # da consulta, e tipo_consulta, cujo valor pode implicar a
+            # existência de parâmetros adicionais
             try:
-                mensagem = receba(self.conn)
-                if not mensagem:
-                    # sem mensagem
-                    return
-                mensagem = json.loads(mensagem)
-            except Exception as e:
-                log.info("Erro na decodificação da mensagem")
-                log.info(e)
-            # tenta executar a consulta
+                msg = self.conn.recv_dict()
+                if not msg: return # sem mensagem => encerramos
+            except Exception as ex:
+                log.info("erro na recepção da mensagem")
+                log.info(ex)
+
+            # Processamento da consulta
             try:
+                handler = self.handlers.get(msg["tipo_consulta"], None)
+                if not handler:
+                    log.error("tipo de consulta não reconhecida")
+                    log.error(msg["tipo_consulta"])
+                    continue # próxima mensagem
+
                 conn_db = sqlite3.connect('./agronet.db')
                 self.cursor = conn_db.cursor()
-                match mensagem["tipo_consulta"]:
-                    case "padrao":
-                        dados = self.handle_padrao(mensagem)
-                    case "insere_imagem":
-                        dados = self.handle_insere_imagem(mensagem)
-                        conn_db.commit()
-                    case "requisita_produto":
-                        pass
-                    case _:
-                        log.error("tipo de consulta não reconhecida")
+                handler(msg)
                 self.cursor.close()
-            except:
-                log.error("erro ao fazer a consulta")
+                conn_db.commit()
+            except Exception as ex:
+                log.error("erro durante processamento básico")
+                log.error(ex)
                 exit(4)
-
-            # devolve a consulta em JSON
-            try:
-                self.conn.sendall(monta_frame(dados))
-                self.conn.close()
-            except Exception as e:
-                log.error("Erro ao devolver a consulta JSON")
-                log.error(e)
-
-        except Exception as e:
-            log.error("erro na thread de resposta")
-            log.error(e)
-            exit(5)
 
 # ------------------------------------------------------------------------------
 
     # Executa a consulta contida na mensagem, lidando com potenciais erros.
     # Retorna a resposta que deve ser dada, na forma de um dicionário python
-    def exec_query(self, mensagem):
-        consulta = mensagem["consulta"]
-        params = mensagem["parametros"]
+    def exec_query(self, msg):
+        consulta = msg["consulta"]
+        params = msg["parametros"]
         try:
             res = self.cursor.execute(consulta, params).fetchall(),
             return {
                 "status" : 0,
                 "resultado" : res
             }
-        except sqlite3.IntegrityError:
+        except sqlite3.IntegrityError as ex:
             # Esse erro ocorre principalmente quando a chave primária do item
             # enviado colide com uma chave primária pré-existente
+            log.info(ex)
             return {
-                "status" : -1,
+                "status" : 1,
                 "erro" : "integridade"
             }
         except Exception as ex:
+            log.error("erro ao executar uma consulta (pode ser sintaxe)")
             log.error(ex)
-            log.error("erro ao fazer a consulta em handle padrão")
-            log.error("pode ser a sintaxe")
             exit(6)
 
-    def handle_padrao(self, mensagem):
-        return self.exec_query(mensagem)
+    def handle_padrao(self, msg):
+        resp = self.exec_query(msg)
+        self.conn.send_dict(resp)
 
-    def handle_insere_imagem(self, mensagem):
-        self.exec_query(mensagem)
+    def handle_insere_imagem(self, msg):
+        resp = self.exec_query(msg)
+        if resp["status"] != 0:
+            self.conn.send_dict(resp)
+            return
+        # Mensagens do desse tipo tem dois campos adicionais: 'imagem', que diz
+        # o nome da mensagem sendo enviada, e 'imagem_conteudo', a imagem em si,
+        # codificada em base 64
         try:
-            nome_imagem = mensagem['imagem']
-            imagem = mensagem['imagem_conteudo']
+            nome_imagem = msg['imagem']
+            imagem = msg['imagem_conteudo']
             with open(f"static/{nome_imagem}", 'wb') as f:
                 f.write(base64.b64decode(imagem))
         except:
             log.error("erro no recebimento da imagem")
             exit(4)
         log.info("imagem inserida com sucesso")
-        return True
+        self.conn.send_dict(resp)

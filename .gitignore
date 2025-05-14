@@ -16,4 +16,5 @@ env/
 *.ui
 .env
 agronet.db
+banco/agronet.db
 setup_eduardo.sh

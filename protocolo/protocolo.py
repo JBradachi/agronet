@@ -12,11 +12,22 @@ class JsonTSocket:
     dado com uma quantidade fixa de bytes.
     """
 
-    def __init__(self):
+    def __init__(self, sock = None):
+        if sock: self.socket = sock; return
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     def connect(self, host, port):
         self.socket.connect((host, port))
+
+    def bind(self, host, port):
+        self.socket.bind((host, port))
+
+    def listen(self):
+        self.socket.listen()
+
+    def accept(self):
+        sock, addr = self.socket.accept()
+        return JsonTSocket(sock), addr
 
     # Envia um dicionário qualquer no formato jsonT
     def send_dict(self, data: dict):
