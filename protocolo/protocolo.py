@@ -3,7 +3,7 @@ import json, socket, struct
 STRUCT_FORMAT = "!Q"
 PAYLOAD_SIZE = struct.calcsize(STRUCT_FORMAT)
 
-class JsonTSocket(socket.socket):
+class JsonTSocket:
     """
     Uma JsonTSocket é uma embalagem sobre a classe padrão de socket do
     python. Seus métodos de envio e recebimento consideram que as mensagens
@@ -12,11 +12,17 @@ class JsonTSocket(socket.socket):
     dado com uma quantidade fixa de bytes.
     """
 
+    def __init__(self):
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    def connect(self, host, port):
+        self.socket.connect((host, port))
+
     # Envia um dicionário qualquer no formato jsonT
-    def send_dict(self, data: dict) -> bytes:
+    def send_dict(self, data: dict):
         data_bin = json.dumps(data).encode()
         size = struct.pack(STRUCT_FORMAT, len(data_bin))
-        return size + data_bin
+        self.socket.sendall(size + data_bin)
 
     # Recebe uma mensagem no format jsonT e retorna o dicionário correspodente
     def recv_dict(self) -> dict:
@@ -24,6 +30,6 @@ class JsonTSocket(socket.socket):
         if not msg_size: return {} # resposta vazia
         msg_size = struct.unpack(STRUCT_FORMAT, msg_size)[0]
 
-        data_str = self.recv(msg_size).decode()
+        data_str = self.socket.recv(msg_size).decode()
         if not data_str: return {} # resposta vazia
         return json.loads(data_str)

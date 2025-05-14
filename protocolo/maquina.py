@@ -13,14 +13,7 @@ class Maquina:
     id: int = -1 # desconhecido no momento do cadastro
 
     def dict(self):
-        "Retorna o dicionário com todos os atributos"
-        return asdict(self)
-
-    def dict_cadastro(self):
-        """
-        Retorna o dicionário com todos os atributos, exceto aqueles que não
-        são usados em um contexto de cadastro
-        """
         data = asdict(self)
-        del data["id"]
+        if self.id < 0:
+            del data["id"]
         return data

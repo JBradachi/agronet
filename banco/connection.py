@@ -5,7 +5,7 @@ import logging as log
 import struct
 
 BUFSIZE = 8192
-PAYLOAD_SIZE = struct.calcsize("Q")
+PAYLOAD_SIZE = struct.calcsize("!Q")
 
 #TODO: coiso pra lidar com concorrencia
 # (talvez fazer uma fila e executar cada Thread uma vez)
@@ -15,7 +15,7 @@ from threading import Thread
 
 def monta_frame(resposta):
     res_json = json.dumps(resposta).encode()
-    tamanho_msg = struct.pack("Q", len(res_json))
+    tamanho_msg = struct.pack("!Q", len(res_json))
 
     frame = tamanho_msg+res_json
     return frame
@@ -27,7 +27,7 @@ def receba(socket):
     msg_size = socket.recv(PAYLOAD_SIZE)
     if not msg_size:
         return msg_size
-    msg_size = struct.unpack("Q", msg_size)[0]
+    msg_size = struct.unpack("!Q", msg_size)[0]
 
     resposta = socket.recv(msg_size).decode()
     return resposta

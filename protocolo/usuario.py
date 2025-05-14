@@ -1,10 +1,13 @@
 from dataclasses import dataclass, asdict
 
 @dataclass
-class Usuario: 
+class Usuario:
     nome: str
     senha: str
-    loja: str
+    loja: str = ""
 
     def dict(self):
-        return asdict(self)
+        data = asdict(self)
+        if self.loja == "":
+            del data["loja"]
+        return data

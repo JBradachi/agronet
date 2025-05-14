@@ -7,7 +7,7 @@ import struct
 
 DB_HOST = "127.0.0.2"
 DB_PORT = 3600
-PAYLOAD_SIZE = struct.calcsize("Q")
+PAYLOAD_SIZE = struct.calcsize("!Q")
 BUFSIZE = 8192
 
 def setup_database_connection():
@@ -20,7 +20,7 @@ def setup_database_connection():
 
 def monta_frame(dados):
     dados_bin = json.dumps(dados).encode()
-    tamanho_msg = struct.pack("Q", len(dados_bin))
+    tamanho_msg = struct.pack("!Q", len(dados_bin))
 
     return tamanho_msg+dados_bin
 
@@ -31,7 +31,7 @@ def receba(socket):
     msg_size = socket.recv(PAYLOAD_SIZE)
     if not msg_size:
         return msg_size
-    msg_size = struct.unpack("Q", msg_size)[0]
+    msg_size = struct.unpack("!Q", msg_size)[0]
 
     resposta = socket.recv(msg_size).decode()
     return resposta

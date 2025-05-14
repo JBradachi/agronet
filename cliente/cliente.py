@@ -1,76 +1,20 @@
+# Adiciona diretório pai ao path do python
+# Para poder acessar a biblioteca protocolo
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import base64
-import socket
 import logging as log
-import json
-import struct
+from protocolo.protocolo import JsonTSocket
+
+from protocolo.loja import Loja
+from protocolo.usuario import Usuario
+from protocolo.maquina import Maquina
 
 HOST = "127.0.0.1"
 PORT = 6000
-PAYLOAD_SIZE = struct.calcsize("Q")
 
 log.basicConfig(level=log.INFO)
-
-def monta_frame(dados):
-    dados_bin = json.dumps(dados).encode()
-    tamanho_msg = struct.pack("Q", len(dados_bin))
-
-    return tamanho_msg+dados_bin
-
-def receba(socket):
-    msg_size = socket.recv(PAYLOAD_SIZE)
-    if not msg_size:
-        return msg_size
-    msg_size = struct.unpack("Q", msg_size)[0]
-
-    resposta = socket.recv(msg_size).decode()
-    return resposta
-
-
-def login_json(nome, senha):
-    envelope = {
-        "tipo_pedido" : "login",
-        "nome" : nome,
-        "senha" : senha
-    }
-    return monta_frame(envelope)
-
-def cadastra_loja_json(nome, dia_criacao, mes_criacao, ano_criacao,
-   cidade, estado, descricao):
-    envelope = {
-        "tipo_pedido" : "cadastra_loja",
-        "nome" : nome,
-        "dia_criacao" : dia_criacao,
-        "mes_criacao" : mes_criacao,
-        "ano_criacao" : ano_criacao,
-        "cidade" : cidade,
-        "estado" : estado,
-        "descricao" : descricao,
-    }
-    return monta_frame(envelope)
-
-def edita_produto_json(id, visivel):
-    visivel = 1 if visivel else 0
-    envelope = {
-        "tipo_pedido" : "edita_produto",
-        "id" : id,
-        "visivel" : visivel,
-    }
-    return monta_frame(envelope)
-
-def insere_produto_json(imagem, modelo, preco, mes_fabricacao, ano_fabricacao,
-                        nome_imagem):
-    envelope = {
-        "tipo_pedido" : "cadastro_produto",
-        "modelo" : modelo,
-        "preco" : preco,
-        "mes_fabricacao" : mes_fabricacao,
-        "ano_fabricacao" : ano_fabricacao,
-        "imagem" : nome_imagem,
-        "imagem_conteudo" : imagem
-    }
-    return monta_frame(envelope)
-
-# ------------------------------------------------------------------------------
 
 class Cliente:
     def __init__(self):
@@ -78,50 +22,59 @@ class Cliente:
 
     def setup_socket(self):
         try:
-            self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.socket = JsonTSocket()
             log.info(f"Conectando ao servidor {HOST}:{PORT}...")
-            self.socket.connect((HOST, PORT))
+            self.socket.connect(HOST, PORT)
         except:
             log.error("Não foi possível conectar ao servidor")
             exit(64)
 
-    def request(self, msg):
+    def request(self, data):
         if not self.socket:
             self.setup_socket()
-        self.socket.sendall(msg)
-
-        resposta = receba(self.socket)
-        if not resposta: return "nada"
+        self.socket.send_dict(data)
+        resposta = self.socket.recv_dict()
         return resposta
 
     def login(self, nome, senha):
-        msg = login_json(nome, senha)
-        return self.request(msg)
+        usuario = Usuario(nome, senha)
+        data = usuario.dict()
+        data["tipo_pedido"] = "login"
+        return self.request(data)
 
     def cadastra_loja(self, nome, dia_criacao, mes_criacao, ano_criacao,
         cidade, estado, descricao):
-        msg = cadastra_loja_json(nome, dia_criacao, mes_criacao, ano_criacao,
+        loja = Loja(nome, dia_criacao, mes_criacao, ano_criacao,
             cidade, estado, descricao)
-        return self.request(msg)
+        req = loja.dict()
+        req["tipo_pedido"] = "cadastra_loja"
+        return self.request(req)
 
     def edita_produto(self, id, visivel):
-        msg = edita_produto_json(id, visivel)
-        return self.request(msg)
+        return self.request({
+            "tipo_pedido" : "edita_produto",
+            "id" : id,
+            "visivel" : bool(visivel),
+        })
 
     def insere_produto(self):
-        try:
-            modelo = "Challenger MT525D 4WD"
-            preco = 77.8
-            mes_fabricacao = 2
-            ano_fabricacao = 2004
-            nome_imagem = "gato.png"
+        loja = "adminStore"
+        modelo = "Challenger MT525D 4WD"
+        preco = 77.8
+        mes_fabricacao = 2
+        ano_fabricacao = 2004
+        nome_imagem = "gato.png"
+        produto = Maquina(loja, modelo, nome_imagem, preco,
+            mes_fabricacao, ano_fabricacao, True)
 
-            msg = b''
+        # Convertendo para o dicionário adequado
+        data = produto.dict()
+        data["tipo_pedido"] = "cadastro_produto"
+        try:
             with open("gato.png", 'rb') as f:
                 img_b64 = base64.b64encode(f.read()).decode('utf-8')
-                msg = insere_produto_json(img_b64, modelo, preco, mes_fabricacao,
-                          ano_fabricacao, nome_imagem)
-            return self.request(msg)
+                data["imagem_conteudo"] = img_b64
+            return self.request(data)
         except Exception as e:
             log.error(e)
             log.error("falha em insere_produto")

@@ -1,4 +1,8 @@
-import sys
+# Adiciona diretório pai ao path do python
+# Para poder acessar a biblioteca protocolo
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton
 from cliente import Cliente
 
@@ -42,7 +46,7 @@ class Interface(QWidget):
         senha = self.input_senha.text()
         if nome and senha:
             resposta = self.cliente.login(nome, senha)
-            self.resposta_label.setText(resposta)
+            self.resposta_label.setText(f"{resposta}")
 
     def envia_produto(self):
         resposta = self.cliente.insere_produto()
