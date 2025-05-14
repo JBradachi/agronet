@@ -49,6 +49,10 @@ def ok_resp():
     resp = { "status" : 0 }
     return json.dumps(resp).encode()
 
+def db_error():
+    log.error("erro na comunicação com o servidor de dados")
+    exit(4)
+
 # Classe que cria threads e lida com conexões
 class ConnectionHandler:
     def __init__(self, conn, addr):
@@ -88,6 +92,9 @@ class ConnectionHandler:
                         token = self.handle_login(pedido)
                         ok, resposta = resposta_login_json(token)
                         self.conn.sendall(resposta)
+                    case "cadastra_loja":
+                        ok = self.handle_cadastra_loja(pedido)
+                        if ok: self.conn.sendall(ok_resp())
                     case "edita_produto":
                         ok = self.handle_edita_produto(pedido)
                         if ok: self.conn.sendall(ok_resp())
@@ -122,9 +129,7 @@ class ConnectionHandler:
             self.user = nome
             self.loja = resposta_db[0][0] # salva a loja do usuário
             return self.token # deu bom, retorna token!
-        except:
-            log.error("erro na comunicação com o servidor de dados")
-            exit(4)
+        except: db_error()
 
     # { "tipo_pedido" : "edita_produto", "id" : <id>, "visivel" : bool}
     def handle_edita_produto(self, dados):
@@ -140,11 +145,45 @@ class ConnectionHandler:
             # então simplesmente não faço nada com ela
             self.conn_db.recv(BUFSIZE).decode()
             return True
-        except:
-            log.error("erro na comunicação com o servidor de dados")
-            exit(4)
+        except: db_error()
 
+    # { "tipo_pedido" : "cadastra_loja", dados_loja... }
+    def handle_cadastra_loja(self, dados):
+        nome = dados["nome"]
+        dia_criacao = int(dados["dia_criacao"])
+        mes_criacao = int(dados["mes_criacao"])
+        ano_criacao = int(dados["ano_criacao"])
+        cidade = dados["cidade"]
+        estado = dados["estado"]
+        descricao = dados["descricao"]
 
+        # TODO verificar se o usuário já não tem uma loja
+        # Primeiramente, adicionamos a loja em si no BD
+        mensagem = consulta_json(
+                "INSERT INTO Loja "
+                "(nome, dia_criacao, mes_criacao, ano_criacao, "
+                  "cidade, estado, descricao) VALUES "
+                "(?, ?, ?, ?, ?, ?, ?)",
+                (nome, dia_criacao, mes_criacao, ano_criacao,
+                 cidade, estado, descricao))
+        # Então, atualizamos o usuário atual com a chave estrangeira
+        # referindo-se à loja
+        mensagem2 = consulta_json(
+                "UPDATE Usuario "
+                "SET loja = ? "
+                "WHERE nome = ?",
+                (nome, self.user))
+
+        try:
+            self.conn_db.sendall(mensagem)
+            # Uma resposta muito importante deve ser tratada aqui: se a loja
+            # já existe ou não. TODO tratar isso
+            self.conn_db.recv(BUFSIZE).decode()
+
+            self.conn_db.sendall(mensagem2)
+            self.conn_db.recv(BUFSIZE).decode()
+            return True
+        except: db_error()
 
     # { "tipo_pedido" : "cadastro_produto", "modelo" : <modelo>, 
     # "preco" : <preco>, "mes_fabricacao" : <mes_fabricacao>,
