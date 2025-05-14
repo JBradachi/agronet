@@ -4,13 +4,22 @@ import socket
 import sqlite3
 import json
 import logging as log
+import struct
 
-BUFSIZE = 4096
+BUFSIZE = 8192
+PAYLOAD_SIZE = struct.calcsize("Q")
 
 #TODO: coiso pra lidar com concorrencia
 # (talvez fazer uma fila e executar cada Thread uma vez)
 # "listener" não bloqueante joga as conexões numa fila
 # executa uma thread por vez
+
+def devolve_consulta(resposta):
+    res_json = json.dumps(resposta).encode()
+    tamanho_msg = struct.pack("Q", len(res_json)) 
+    
+    frame = tamanho_msg+res_json
+    return frame
 
 def ok_resp():
     resp = { "status" : 0 }
@@ -35,7 +44,9 @@ class ConnectionHandler:
             # A consulta, como descrito em docs/decisoes.md, é um JSON com dois
             # campos: um com a consulta em si e outro com seus parâmetros
             try:
-                mensagem = self.conn.recv(BUFSIZE).decode()
+                msg_size = self.conn.recv(PAYLOAD_SIZE)
+                msg_size = struct.unpack("Q", msg_size)[0]
+                mensagem = self.conn.recv(msg_size).decode()
                 mensagem = json.loads(mensagem)
             except Exception as e:
                 log.info("erro na decodificação da mensagem")
@@ -60,8 +71,7 @@ class ConnectionHandler:
 
             # devolve a consulta em JSON
             try:
-                dados_json = json.dumps(dados)
-                self.conn.sendall(dados_json.encode())
+                self.conn.sendall(devolve_consulta(dados))
                 self.conn.close()
             except Exception as e:
                 log.info("Erro ao devolver a consulta JSON")

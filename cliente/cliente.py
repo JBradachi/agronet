@@ -2,10 +2,12 @@ import base64
 import socket
 import logging as log
 import json
+import struct
 
 HOST = "127.0.0.1"
 PORT = 6000
-BUFSIZE = 4096
+BUFSIZE = 8192
+PAYLOAD_SIZE = struct.calcsize("Q")
 
 log.basicConfig(level=log.INFO)
 
@@ -58,9 +60,14 @@ def simple_request(msg):
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     log.info(f"Conectando ao servidor {HOST}:{PORT}...")
     client.connect((HOST, PORT))
-    client.sendall(msg)
 
-    resposta = client.recv(BUFSIZE).decode()
+    tamanho_msg = struct.pack("Q", len(msg))
+    client.sendall(tamanho_msg+msg)
+
+    msg_size = client.recv(PAYLOAD_SIZE)
+    msg_size = struct.unpack("Q", msg_size)[0]
+    resposta = client.recv(msg_size).decode()
+
     resposta = json.loads(resposta)
     
     client.close()
@@ -70,10 +77,16 @@ def insert_product_request(msg):
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     log.info(f"Conectando ao servidor {HOST}:{PORT}...")
     client.connect((HOST, PORT))
-    client.sendall(msg)
+
+    tamanho_msg = struct.pack("Q", len(msg))
+    client.sendall(tamanho_msg+msg) 
     
-    resposta = client.recv(BUFSIZE).decode()
+    msg_size = client.recv(PAYLOAD_SIZE)
+    msg_size = struct.unpack("Q", msg_size)[0]
+    resposta = client.recv(msg_size).decode()
+
     resposta = json.loads(resposta)
+
     client.close()
     return f"{resposta}"
 
