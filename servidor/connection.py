@@ -17,36 +17,44 @@ def setup_database_connection():
     conn_db.connect((DB_HOST, DB_PORT))
     return conn_db
 
+
+def monta_frame(dados):
+    dados_bin = json.dumps(dados).encode()
+    tamanho_msg = struct.pack("Q", len(dados_bin))
+    
+    return tamanho_msg+dados_bin
+
+def receba(socket):
+    # pega o tamanho fixo de long long int para pegar
+    # o tamanho da mensagem, com o tamanho da mensagem 
+    # em mãos, pega a mensagem
+    msg_size = socket.recv(PAYLOAD_SIZE)
+    if not msg_size:
+        return msg_size
+    msg_size = struct.unpack("Q", msg_size)[0]
+
+    resposta = socket.recv(msg_size).decode()
+    return resposta
+
+
 def consulta_json(sql, params):
     consulta = { "tipo_consulta" : "padrao", "consulta" : sql, 
                 "parametros" : params 
                 }
-    consulta_bin = json.dumps(consulta).encode()
-    tamanho_msg = struct.pack("Q", len(consulta_bin)) 
-
-    frame = tamanho_msg+consulta_bin
-    return frame
+    return monta_frame(consulta)
 
 def insere_imagem_json(sql, params, base64_img, nome_imagem):
     consulta = { "tipo_consulta" : "insere_imagem", "consulta" : sql, 
                 "parametros" : params , "imagem" : base64_img,
                 "nome_imagem" : nome_imagem
                 }
-    consulta_bin = json.dumps(consulta).encode()
-    tamanho_msg = struct.pack("Q", len(consulta_bin)) 
-
-    frame = tamanho_msg+consulta_bin
-    return frame
+    return monta_frame(consulta)
 
 def requisita_imagem_json(sql, params):
     consulta = { "tipo_consulta" : "requisita_produto", "consulta" : sql, 
                 "parametros" : params 
                 }
-    consulta_bin = json.dumps(consulta).encode()
-    tamanho_msg = struct.pack("Q", len(consulta_bin)) 
-
-    frame = tamanho_msg+consulta_bin
-    return frame
+    return monta_frame(consulta)
 
 def resposta_login_json(token):
     # token pode ser
@@ -54,26 +62,14 @@ def resposta_login_json(token):
     # - valor false se falhou no login
     if token: 
         resposta = { "token" : token , "status" : 0}
-        resposta_bin = json.dumps(resposta).encode()
-
-        tamanho_msg = struct.pack("Q", len(resposta_bin)) 
-        frame = tamanho_msg + resposta_bin
-        return True, frame
+        return True, monta_frame(resposta)
     else: 
         resposta = { "status" : -1 , "erro" : "Falha no login" }
-        resposta_bin = json.dumps(resposta).encode()
-
-        tamanho_msg = struct.pack("Q", len(resposta_bin)) 
-        frame = tamanho_msg + resposta_bin
-        return False, frame
+        return False, monta_frame(resposta)
 
 def ok_resp():
-    resp = { "status" : 0 }
-    resp_bin = json.dumps(resp).encode()
-
-    tamanho_msg = struct.pack("Q", len(resp_bin)) 
-    frame = tamanho_msg + resp_bin
-    return frame
+    resposta = { "status" : 0 }
+    return monta_frame(resposta)
 
 def db_error():
     log.error("erro na comunicação com o servidor de dados")
@@ -99,24 +95,16 @@ class ConnectionHandler:
     # Executa a thread
     def run(self):
         try:
-            self.conn_db = setup_database_connection()
             while True:
+                self.conn_db = setup_database_connection()  
                 try:
-                    # pega o tamanho fixo de long long int para pegar
-                    # o tamanho da mensagem
-                    msg_size = self.conn.recv(PAYLOAD_SIZE)
-                    msg_size = struct.unpack("Q", msg_size)[0]
-
-                    # com o tamanho da mensagem em mãos, pega a mensagem
-                    pedido_json = self.conn.recv(msg_size)
-
+                    pedido_json = receba(self.conn)
                 except Exception as e:
                     log.error("erro na decodificação do pedido")
                     log.error(e)
                 if not pedido_json:
-                    self.conn_db.close()
+                    #self.conn_db.close()
                     break # conexão encerrada
-                pedido_json = pedido_json.decode()
                 pedido = json.loads(pedido_json)
                 # O campo 'tipo_pedido' diz-nos como lidar com o pedido recebido
                 ok = True
@@ -139,8 +127,9 @@ class ConnectionHandler:
                 if not ok:
                     # TODO responder ao cliente aqui
                     log.info("O pedido não foi bem sucedido")
-        except:
+        except Exception as e:
             log.error("erro ao contatar o servidor de dados")
+            log.error(e)
             exit(4) # não há como continuar
 
     # { "tipo_pedido" : "login", "nome" : <nome>, "senha" : <senha> }
@@ -155,9 +144,7 @@ class ConnectionHandler:
             
             self.conn_db.sendall(mensagem)
 
-            msg_size = self.conn_db.recv(PAYLOAD_SIZE)
-            msg_size = struct.unpack("Q", msg_size)[0]
-            resposta_db_json = self.conn_db.recv(msg_size).decode()
+            resposta_db_json = receba(self.conn_db)
             
             resposta_db = json.loads(resposta_db_json)
             if not resposta_db:
@@ -181,7 +168,7 @@ class ConnectionHandler:
             self.conn_db.sendall(mensagem)
             # Não acho que a resposta do banco interessa muito nesse caso,
             # então simplesmente não faço nada com ela
-            self.conn_db.recv(BUFSIZE).decode()
+            receba(self.conn_db)
             return True
         except: db_error()
 
@@ -216,10 +203,10 @@ class ConnectionHandler:
             self.conn_db.sendall(mensagem)
             # Uma resposta muito importante deve ser tratada aqui: se a loja
             # já existe ou não. TODO tratar isso
-            self.conn_db.recv(BUFSIZE).decode()
+            receba(self.conn_db)
 
             self.conn_db.sendall(mensagem2)
-            self.conn_db.recv(BUFSIZE).decode()
+            receba(self.conn_db)
             return True
         except: db_error()
 

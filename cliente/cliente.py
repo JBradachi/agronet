@@ -6,10 +6,25 @@ import struct
 
 HOST = "127.0.0.1"
 PORT = 6000
-BUFSIZE = 8192
 PAYLOAD_SIZE = struct.calcsize("Q")
 
 log.basicConfig(level=log.INFO)
+
+def monta_frame(dados):
+    dados_bin = json.dumps(dados).encode()
+    tamanho_msg = struct.pack("Q", len(dados_bin))
+    
+    return tamanho_msg+dados_bin
+
+def receba(socket):
+    msg_size = socket.recv(PAYLOAD_SIZE)
+    if not msg_size:
+        return msg_size
+    msg_size = struct.unpack("Q", msg_size)[0]
+
+    resposta = socket.recv(msg_size).decode()
+    return resposta
+
 
 def login_json(nome, senha):
     envelope = { 
@@ -17,7 +32,7 @@ def login_json(nome, senha):
         "nome" : nome, 
         "senha" : senha 
     }
-    return json.dumps(envelope).encode()
+    return monta_frame(envelope)
 
 def cadastra_loja_json(nome, dia_criacao, mes_criacao, ano_criacao,
    cidade, estado, descricao):
@@ -31,7 +46,7 @@ def cadastra_loja_json(nome, dia_criacao, mes_criacao, ano_criacao,
         "estado" : estado,
         "descricao" : descricao,
     }
-    return json.dumps(envelope).encode()
+    return monta_frame(envelope)
 
 def edita_produto_json(id, visivel):
     visivel = 1 if visivel else 0
@@ -40,19 +55,20 @@ def edita_produto_json(id, visivel):
         "id" : id,
         "visivel" : visivel,
     }
-    return json.dumps(envelope).encode()
+    return monta_frame(envelope)
 
-def insere_produto_json(imagem):
+def insere_produto_json(imagem, modelo, preco, mes_fabricacao, ano_fabricacao, 
+                        nome_imagem):
     envelope = { 
         "tipo_pedido" : "cadastro_produto", 
-        "modelo" : "Challenger MT525D 4WD", 
-        "preco" : 77.8, 
-        "mes_fabricacao" : 2,
-        "ano_fabricacao" : 2004, 
-        "nome_imagem" : "gato.png",
+        "modelo" : modelo,
+        "preco" : preco,
+        "mes_fabricacao" : mes_fabricacao,
+        "ano_fabricacao" : ano_fabricacao,
+        "nome_imagem" : nome_imagem,
         "imagem" : imagem 
     }
-    return json.dumps(envelope).encode()
+    return monta_frame(envelope)
 
 # ------------------------------------------------------------------------------
 
@@ -61,14 +77,12 @@ def simple_request(msg):
     log.info(f"Conectando ao servidor {HOST}:{PORT}...")
     client.connect((HOST, PORT))
 
-    tamanho_msg = struct.pack("Q", len(msg))
-    client.sendall(tamanho_msg+msg)
+    client.sendall(msg)
 
-    msg_size = client.recv(PAYLOAD_SIZE)
-    msg_size = struct.unpack("Q", msg_size)[0]
-    resposta = client.recv(msg_size).decode()
-
-    resposta = json.loads(resposta)
+    resposta = receba(client)
+    if not resposta:
+        resposta = { "status" : "resposta vazia" }
+    else: resposta = json.loads(resposta)
     
     client.close()
     return f"{resposta}"
@@ -78,14 +92,15 @@ def insert_product_request(msg):
     log.info(f"Conectando ao servidor {HOST}:{PORT}...")
     client.connect((HOST, PORT))
 
-    tamanho_msg = struct.pack("Q", len(msg))
-    client.sendall(tamanho_msg+msg) 
+    client.sendall(msg) 
     
-    msg_size = client.recv(PAYLOAD_SIZE)
-    msg_size = struct.unpack("Q", msg_size)[0]
-    resposta = client.recv(msg_size).decode()
-
-    resposta = json.loads(resposta)
+    resposta = receba(client)
+    if not resposta:
+        resposta = { "status" : "resposta vazia" }
+        log.info(f"resposta vazia {resposta}")
+    else: 
+        resposta = json.loads(resposta)
+        log.info(f"resposta certa {resposta}")
 
     client.close()
     return f"{resposta}"
@@ -99,6 +114,7 @@ def login(nome, senha):
 
 def cadastra_loja(nome, dia_criacao, mes_criacao, ano_criacao,
     cidade, estado, descricao):
+
     msg = cadastra_loja_json(nome, dia_criacao, mes_criacao, ano_criacao,
         cidade, estado, descricao)
     return simple_request(msg)
@@ -109,11 +125,19 @@ def edita_produto(id, visivel):
 
 def insere_produto():
     try:
+
+        modelo = "Challenger MT525D 4WD"
+        preco = 77.8
+        mes_fabricacao = 2
+        ano_fabricacao = 2004 
+        nome_imagem = "gato.png"
+
         msg = b''
         with open("gato.png", 'rb') as f:
             img_b64 = base64.b64encode(f.read()).decode('utf-8')
-            msg = insere_produto_json(img_b64)
+            msg = insere_produto_json(img_b64, modelo, preco, mes_fabricacao, ano_fabricacao, nome_imagem)
         return insert_product_request(msg)
+    
     except Exception as e:
         log.error(e)
         log.error("falha em insere_produto")

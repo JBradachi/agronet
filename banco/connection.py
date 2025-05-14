@@ -14,16 +14,28 @@ PAYLOAD_SIZE = struct.calcsize("Q")
 # "listener" não bloqueante joga as conexões numa fila
 # executa uma thread por vez
 
-def devolve_consulta(resposta):
+def monta_frame(resposta):
     res_json = json.dumps(resposta).encode()
     tamanho_msg = struct.pack("Q", len(res_json)) 
     
     frame = tamanho_msg+res_json
     return frame
 
+def receba(socket):
+    # pega o tamanho fixo de long long int para pegar
+    # o tamanho da mensagem, com o tamanho da mensagem 
+    # em mãos, pega a mensagem
+    msg_size = socket.recv(PAYLOAD_SIZE)
+    if not msg_size:
+        return msg_size
+    msg_size = struct.unpack("Q", msg_size)[0]
+
+    resposta = socket.recv(msg_size).decode()
+    return resposta
+
 def ok_resp():
-    resp = { "status" : 0 }
-    return json.dumps(resp).encode()
+    resposta = { "status" : 0 }
+    return monta_frame(resposta)
 
 class ConnectionHandler:
     def __init__(self, conn, addr):
@@ -44,13 +56,14 @@ class ConnectionHandler:
             # A consulta, como descrito em docs/decisoes.md, é um JSON com dois
             # campos: um com a consulta em si e outro com seus parâmetros
             try:
-                msg_size = self.conn.recv(PAYLOAD_SIZE)
-                msg_size = struct.unpack("Q", msg_size)[0]
-                mensagem = self.conn.recv(msg_size).decode()
+                mensagem = receba(self.conn)
+                if not mensagem:
+                    # sem mensagem
+                    return
                 mensagem = json.loads(mensagem)
             except Exception as e:
-                log.info("erro na decodificação da mensagem")
-                log.info(e)
+                log.error("erro na decodificação da mensagem")
+                log.error(e)
             # tenta executar a consulta
             try:
                 conn_db = sqlite3.connect('./agronet.db')
@@ -71,11 +84,11 @@ class ConnectionHandler:
 
             # devolve a consulta em JSON
             try:
-                self.conn.sendall(devolve_consulta(dados))
+                self.conn.sendall(monta_frame(dados))
                 self.conn.close()
             except Exception as e:
-                log.info("Erro ao devolver a consulta JSON")
-                log.info(e)
+                log.error("Erro ao devolver a consulta JSON")
+                log.error(e)
 
         except Exception as e:
             log.error("erro na tread de resposta")
@@ -89,7 +102,7 @@ class ConnectionHandler:
             return dados
         except Exception as ex:
             log.error(ex)
-            log.error("erro ao fazer a consulta")
+            log.error("erro ao fazer a consulta em handle padrão")
             log.error("pode ser a sintaxe")
             exit(6)
 
@@ -99,7 +112,7 @@ class ConnectionHandler:
                             tuple(mensagem["parametros"])).fetchall()
         except Exception as e:
             log.error(e)
-            log.error("erro ao fazer a consulta")
+            log.error("erro ao fazer a consulta em handle insere imagem")
             log.error("pode ser a sintaxe")
             exit(6)
 
@@ -109,6 +122,6 @@ class ConnectionHandler:
         except:
             log.error("erro no recebimento da imagem")
             exit(4)
-        log.info("Enviou a imagem")
+        log.info("imagem inserida com sucesso")
         conn_db.commit()
         return True
