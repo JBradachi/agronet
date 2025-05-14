@@ -13,7 +13,7 @@ log.basicConfig(level=log.INFO)
 def monta_frame(dados):
     dados_bin = json.dumps(dados).encode()
     tamanho_msg = struct.pack("Q", len(dados_bin))
-    
+
     return tamanho_msg+dados_bin
 
 def receba(socket):
@@ -27,10 +27,10 @@ def receba(socket):
 
 
 def login_json(nome, senha):
-    envelope = { 
-        "tipo_pedido" : "login", 
-        "nome" : nome, 
-        "senha" : senha 
+    envelope = {
+        "tipo_pedido" : "login",
+        "nome" : nome,
+        "senha" : senha
     }
     return monta_frame(envelope)
 
@@ -57,87 +57,71 @@ def edita_produto_json(id, visivel):
     }
     return monta_frame(envelope)
 
-def insere_produto_json(imagem, modelo, preco, mes_fabricacao, ano_fabricacao, 
+def insere_produto_json(imagem, modelo, preco, mes_fabricacao, ano_fabricacao,
                         nome_imagem):
-    envelope = { 
-        "tipo_pedido" : "cadastro_produto", 
+    envelope = {
+        "tipo_pedido" : "cadastro_produto",
         "modelo" : modelo,
         "preco" : preco,
         "mes_fabricacao" : mes_fabricacao,
         "ano_fabricacao" : ano_fabricacao,
         "nome_imagem" : nome_imagem,
-        "imagem" : imagem 
+        "imagem" : imagem
     }
     return monta_frame(envelope)
 
 # ------------------------------------------------------------------------------
 
-def simple_request(msg):
-    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    log.info(f"Conectando ao servidor {HOST}:{PORT}...")
-    client.connect((HOST, PORT))
+class Cliente:
+    def __init__(self):
+        self.socket = None
 
-    client.sendall(msg)
+    def setup_socket(self):
+        try:
+            self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            log.info(f"Conectando ao servidor {HOST}:{PORT}...")
+            self.socket.connect((HOST, PORT))
+        except:
+            log.error("Não foi possível conectar ao servidor")
+            exit(64)
 
-    resposta = receba(client)
-    if not resposta:
-        resposta = { "status" : "resposta vazia" }
-    else: resposta = json.loads(resposta)
-    
-    client.close()
-    return f"{resposta}"
+    def request(self, msg):
+        if not self.socket:
+            self.setup_socket()
+        self.socket.sendall(msg)
 
-def insert_product_request(msg):
-    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    log.info(f"Conectando ao servidor {HOST}:{PORT}...")
-    client.connect((HOST, PORT))
+        resposta = receba(self.socket)
+        if not resposta: return "nada"
+        return resposta
 
-    client.sendall(msg) 
-    
-    resposta = receba(client)
-    if not resposta:
-        resposta = { "status" : "resposta vazia" }
-        log.info(f"resposta vazia {resposta}")
-    else: 
-        resposta = json.loads(resposta)
-        log.info(f"resposta certa {resposta}")
+    def login(self, nome, senha):
+        msg = login_json(nome, senha)
+        return self.request(msg)
 
-    client.close()
-    return f"{resposta}"
+    def cadastra_loja(self, nome, dia_criacao, mes_criacao, ano_criacao,
+        cidade, estado, descricao):
+        msg = cadastra_loja_json(nome, dia_criacao, mes_criacao, ano_criacao,
+            cidade, estado, descricao)
+        return self.request(msg)
 
-def enviar_nome(nome):
-    return simple_request(nome.encode())
+    def edita_produto(self, id, visivel):
+        msg = edita_produto_json(id, visivel)
+        return self.request(msg)
 
-def login(nome, senha):
-    msg = login_json(nome, senha)
-    return simple_request(msg)
+    def insere_produto(self):
+        try:
+            modelo = "Challenger MT525D 4WD"
+            preco = 77.8
+            mes_fabricacao = 2
+            ano_fabricacao = 2004
+            nome_imagem = "gato.png"
 
-def cadastra_loja(nome, dia_criacao, mes_criacao, ano_criacao,
-    cidade, estado, descricao):
-
-    msg = cadastra_loja_json(nome, dia_criacao, mes_criacao, ano_criacao,
-        cidade, estado, descricao)
-    return simple_request(msg)
-
-def edita_produto(id, visivel):
-    msg = edita_produto_json(id, visivel)
-    return simple_request(msg)
-
-def insere_produto():
-    try:
-
-        modelo = "Challenger MT525D 4WD"
-        preco = 77.8
-        mes_fabricacao = 2
-        ano_fabricacao = 2004 
-        nome_imagem = "gato.png"
-
-        msg = b''
-        with open("gato.png", 'rb') as f:
-            img_b64 = base64.b64encode(f.read()).decode('utf-8')
-            msg = insere_produto_json(img_b64, modelo, preco, mes_fabricacao, ano_fabricacao, nome_imagem)
-        return insert_product_request(msg)
-    
-    except Exception as e:
-        log.error(e)
-        log.error("falha em insere_produto")
+            msg = b''
+            with open("gato.png", 'rb') as f:
+                img_b64 = base64.b64encode(f.read()).decode('utf-8')
+                msg = insere_produto_json(img_b64, modelo, preco, mes_fabricacao,
+                          ano_fabricacao, nome_imagem)
+            return self.request(msg)
+        except Exception as e:
+            log.error(e)
+            log.error("falha em insere_produto")

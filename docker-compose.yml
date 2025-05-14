@@ -4,11 +4,11 @@ services:
     container_name: client-app
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix
-      - ./cliente:/app  
+      - ./cliente:/app
     environment:
       - DISPLAY=${DISPLAY}
       - QT_X11_NO_MITSHM=1
-    network_mode: host 
+    network_mode: host
     depends_on:
       - banco
       - server
@@ -21,7 +21,7 @@ services:
       - ./servidor:/app
     ports:
       - "6000:6000"
-    network_mode: host 
+    network_mode: host
     depends_on:
       - banco
 

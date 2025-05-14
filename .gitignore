@@ -5,9 +5,9 @@ venv/
 env/
 *.log
 *.tmp
-/server/__pycache__/
+/servidor/__pycache__/
 /client/__pycache__/
-/interface/__pycache__/
+/banco/__pycache__/
 .dockerignore
 *.tar
 *.container

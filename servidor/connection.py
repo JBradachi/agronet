@@ -21,12 +21,12 @@ def setup_database_connection():
 def monta_frame(dados):
     dados_bin = json.dumps(dados).encode()
     tamanho_msg = struct.pack("Q", len(dados_bin))
-    
+
     return tamanho_msg+dados_bin
 
 def receba(socket):
     # pega o tamanho fixo de long long int para pegar
-    # o tamanho da mensagem, com o tamanho da mensagem 
+    # o tamanho da mensagem, com o tamanho da mensagem
     # em mãos, pega a mensagem
     msg_size = socket.recv(PAYLOAD_SIZE)
     if not msg_size:
@@ -38,21 +38,21 @@ def receba(socket):
 
 
 def consulta_json(sql, params):
-    consulta = { "tipo_consulta" : "padrao", "consulta" : sql, 
-                "parametros" : params 
+    consulta = { "tipo_consulta" : "padrao", "consulta" : sql,
+                "parametros" : params
                 }
     return monta_frame(consulta)
 
 def insere_imagem_json(sql, params, base64_img, nome_imagem):
-    consulta = { "tipo_consulta" : "insere_imagem", "consulta" : sql, 
+    consulta = { "tipo_consulta" : "insere_imagem", "consulta" : sql,
                 "parametros" : params , "imagem" : base64_img,
                 "nome_imagem" : nome_imagem
                 }
     return monta_frame(consulta)
 
 def requisita_imagem_json(sql, params):
-    consulta = { "tipo_consulta" : "requisita_produto", "consulta" : sql, 
-                "parametros" : params 
+    consulta = { "tipo_consulta" : "requisita_produto", "consulta" : sql,
+                "parametros" : params
                 }
     return monta_frame(consulta)
 
@@ -60,10 +60,10 @@ def resposta_login_json(token):
     # token pode ser
     # - uma URL segura de 32 caracteres se sucesso no login
     # - valor false se falhou no login
-    if token: 
+    if token:
         resposta = { "token" : token , "status" : 0}
         return True, monta_frame(resposta)
-    else: 
+    else:
         resposta = { "status" : -1 , "erro" : "Falha no login" }
         return False, monta_frame(resposta)
 
@@ -96,7 +96,7 @@ class ConnectionHandler:
     def run(self):
         try:
             while True:
-                self.conn_db = setup_database_connection()  
+                self.conn_db = setup_database_connection()
                 try:
                     pedido_json = receba(self.conn)
                 except Exception as e:
@@ -114,8 +114,8 @@ class ConnectionHandler:
                         ok, resposta = resposta_login_json(token)
                         self.conn.sendall(resposta)
                     case "cadastra_loja":
-                        ok = self.handle_cadastra_loja(pedido)
-                        if ok: self.conn.sendall(ok_resp())
+                        resposta = self.handle_cadastra_loja(pedido)
+                        self.conn.sendall(resposta)
                     case "edita_produto":
                         ok = self.handle_edita_produto(pedido)
                         if ok: self.conn.sendall(ok_resp())
@@ -132,6 +132,8 @@ class ConnectionHandler:
             log.error(e)
             exit(4) # não há como continuar
 
+# ------------------------------------------------------------------------------
+
     # { "tipo_pedido" : "login", "nome" : <nome>, "senha" : <senha> }
     def handle_login(self, dados):
         nome = dados["nome"]
@@ -141,18 +143,19 @@ class ConnectionHandler:
                 "SELECT loja FROM Usuario "
                 "WHERE nome = ? AND senha = ?", (nome, senha))
         try:
-            
+
             self.conn_db.sendall(mensagem)
 
             resposta_db_json = receba(self.conn_db)
-            
+
             resposta_db = json.loads(resposta_db_json)
-            if not resposta_db:
+            if not resposta_db or not resposta_db["resultado"]:
                 # sem resposta do banco => não existe tal usuário
                 return False
             self.token = secrets.token_urlsafe(16)
             self.user = nome
-            self.loja = resposta_db[0][0] # salva a loja do usuário
+            # Alerta de linha absolutamente horrorosa abaixo
+            self.loja = resposta_db["resultado"][0][0]
             return self.token # deu bom, retorna token!
         except: db_error()
 
@@ -193,6 +196,7 @@ class ConnectionHandler:
                  cidade, estado, descricao))
         # Então, atualizamos o usuário atual com a chave estrangeira
         # referindo-se à loja
+        log.info("Chegou aqui")
         mensagem2 = consulta_json(
                 "UPDATE Usuario "
                 "SET loja = ? "
@@ -201,18 +205,22 @@ class ConnectionHandler:
 
         try:
             self.conn_db.sendall(mensagem)
-            # Uma resposta muito importante deve ser tratada aqui: se a loja
-            # já existe ou não. TODO tratar isso
-            receba(self.conn_db)
+            # Forte possibilidade de erro aqui: loja já existe
+            resp_db = receba(self.conn_db)
+            if int(resp_db["status"]) != 0:
+                # Erro: a loja já existe. Repassamos o erro para o servidor
+                log.error("Erro!")
+                return json.dumps(resp_db)
 
             self.conn_db.sendall(mensagem2)
             receba(self.conn_db)
-            return True
+            log.info("OK!")
+            return ok_resp()
         except: db_error()
 
-    # { "tipo_pedido" : "cadastro_produto", "modelo" : <modelo>, 
+    # { "tipo_pedido" : "cadastro_produto", "modelo" : <modelo>,
     # "preco" : <preco>, "mes_fabricacao" : <mes_fabricacao>,
-    # "ano_fabricacao" : <ano_fabricacao>, "nome_imagem" : <nome_imagem> 
+    # "ano_fabricacao" : <ano_fabricacao>, "nome_imagem" : <nome_imagem>
     # "imagem" : base64_img }
     def handle_produto(self, dados):
         # if not self.token:
@@ -230,11 +238,11 @@ class ConnectionHandler:
         imagem = dados["imagem"]
         # loja = self.loja
         loja = "adminStore"
-        
-        params = (nome_imagem, loja, modelo, preco, 
+
+        params = (nome_imagem, loja, modelo, preco,
                 mes_fabricacao, ano_fabricacao)
-        
-        #TODO: função que verifica se existe imagem de nome igual 
+
+        #TODO: função que verifica se existe imagem de nome igual
         # e muda nome se tiver antes de mandar pro banco
         #TODO: self guardar a loja do usuário, (se tiver)
         #TODO: banco ter um tipo pedido tambem: recebe_imagem e consulta
@@ -244,11 +252,11 @@ class ConnectionHandler:
             "VALUES (?, ?, ?, ?, ?, ?)", params, imagem, nome_imagem)
 
         try:
-            # tenta inserir os dados 
+            # tenta inserir os dados
             self.conn_db.sendall(mensagem)
         except:
             log.error("erro na comunicação com o servidor de dados")
             log.error("handle_produto, inserção de dados no banco")
             exit(4)
-        
+
         return True
