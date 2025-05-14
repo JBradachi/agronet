@@ -1,3 +1,4 @@
+import base64
 import socket
 import logging as log
 import json
@@ -25,14 +26,15 @@ def edita_produto_json(id, visivel):
     }
     return json.dumps(envelope).encode()
 
-def insere_produto_json():
+def insere_produto_json(imagem):
     envelope = { 
         "tipo_pedido" : "cadastro_produto", 
         "modelo" : "Challenger MT525D 4WD", 
         "preco" : 77.8, 
         "mes_fabricacao" : 2,
         "ano_fabricacao" : 2004, 
-        "imagem" : "gato.png" 
+        "nome_imagem" : "gato.png",
+        "imagem" : imagem 
     }
     return json.dumps(envelope).encode()
 
@@ -46,8 +48,9 @@ def simple_request(msg):
 
     resposta = client.recv(BUFSIZE).decode()
     resposta = json.loads(resposta)
+    
     client.close()
-    return resposta
+    return f"{resposta}"
 
 def insert_product_request(msg):
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -55,26 +58,10 @@ def insert_product_request(msg):
     client.connect((HOST, PORT))
     client.sendall(msg)
     
-    nome_imagem = json.loads(msg.decode())["imagem"]
-
-    ok = json.loads(client.recv(BUFSIZE).decode())
-    if ok["status"] == 0 :
-        try:
-            with open(nome_imagem, 'rb') as f:
-                while True:
-                    data = f.read(BUFSIZE)
-                    if not data:
-                        break
-                    client.sendall(data)
-
-        except Exception as e:
-            log.error(e)
-            log.error("falha ao abrir a imagem")
-    
     resposta = client.recv(BUFSIZE).decode()
     resposta = json.loads(resposta)
     client.close()
-    return resposta
+    return f"{resposta}"
 
 def enviar_nome(nome):
     return simple_request(nome.encode())
@@ -88,5 +75,12 @@ def edita_produto(id, visivel):
     return simple_request(msg)
 
 def insere_produto():
-    msg = insere_produto_json()
-    return insert_product_request(msg)
+    try:
+        msg = b''
+        with open("gato.png", 'rb') as f:
+            img_b64 = base64.b64encode(f.read()).decode('utf-8')
+            msg = insere_produto_json(img_b64)
+        return insert_product_request(msg)
+    except Exception as e:
+        log.error(e)
+        log.error("falha em insere_produto")

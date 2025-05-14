@@ -17,26 +17,33 @@ def setup_database_connection():
 
 def consulta_json(sql, params):
     consulta = { "tipo_consulta" : "padrao", "consulta" : sql, 
-                "parametros" : params }
+                "parametros" : params 
+                }
     return json.dumps(consulta).encode()
 
-def insere_imagem_json(sql, params):
+def insere_imagem_json(sql, params, base64_img, nome_imagem):
     consulta = { "tipo_consulta" : "insere_imagem", "consulta" : sql, 
-                "parametros" : params }
+                "parametros" : params , "imagem" : base64_img,
+                "nome_imagem" : nome_imagem
+                }
     return json.dumps(consulta).encode()
 
 def requisita_imagem_json(sql, params):
     consulta = { "tipo_consulta" : "requisita_produto", "consulta" : sql, 
-                "parametros" : params }
+                "parametros" : params 
+                }
     return json.dumps(consulta).encode()
 
 def resposta_login_json(token):
     # token pode ser
     # - uma URL segura de 32 caracteres se sucesso no login
     # - valor false se falhou no login
-    if token: resposta = { "token" : token , "status" : 0}
-    else: resposta = { "status" : -1 , "erro" : "Falha no login" }
-    return json.dumps(resposta).encode()
+    if token: 
+        resposta = { "token" : token , "status" : 0}
+        return True, json.dumps(resposta).encode()
+    else: 
+        resposta = { "status" : -1 , "erro" : "Falha no login" }
+        return False, json.dumps(resposta).encode()
 
 def ok_resp():
     resp = { "status" : 0 }
@@ -65,19 +72,21 @@ class ConnectionHandler:
             self.conn_db = setup_database_connection()
             while True:
                 try:
-                    pedido_json = self.conn.recv(BUFSIZE).decode()
+                    pedido_json = self.conn.recv(BUFSIZE)
                 except Exception as e:
                     log.error("erro na decodificação do pedido")
                     log.error(e)
                 if not pedido_json:
+                    self.conn_db.close()
                     break # conexão encerrada
+                pedido_json = pedido_json.decode()
                 pedido = json.loads(pedido_json)
                 # O campo 'tipo_pedido' diz-nos como lidar com o pedido recebido
                 ok = True
                 match pedido["tipo_pedido"]:
                     case "login":
-                        ok = self.handle_login(pedido)
-                        resposta = resposta_login_json(ok)
+                        token = self.handle_login(pedido)
+                        ok, resposta = resposta_login_json(token)
                         self.conn.sendall(resposta)
                     case "edita_produto":
                         ok = self.handle_edita_produto(pedido)
@@ -90,8 +99,6 @@ class ConnectionHandler:
                 if not ok:
                     # TODO responder ao cliente aqui
                     log.info("O pedido não foi bem sucedido")
-
-            self.conn_db.close()
         except:
             log.error("erro ao contatar o servidor de dados")
             exit(4) # não há como continuar
@@ -141,7 +148,8 @@ class ConnectionHandler:
 
     # { "tipo_pedido" : "cadastro_produto", "modelo" : <modelo>, 
     # "preco" : <preco>, "mes_fabricacao" : <mes_fabricacao>,
-    # "ano_fabricacao" : <ano_fabricacao>, "imagem" : <nome_imagem> }
+    # "ano_fabricacao" : <ano_fabricacao>, "nome_imagem" : <nome_imagem> 
+    # "imagem" : base64_img }
     def handle_produto(self, dados):
         # if not self.token:
         #     log.error("Usuário não logado, favor logar")
@@ -154,7 +162,8 @@ class ConnectionHandler:
         preco = dados["preco"]
         mes_fabricacao = dados["mes_fabricacao"]
         ano_fabricacao = dados["ano_fabricacao"]
-        nome_imagem = dados["imagem"]
+        nome_imagem = dados["nome_imagem"]
+        imagem = dados["imagem"]
         # loja = self.loja
         loja = "adminStore"
         
@@ -168,7 +177,7 @@ class ConnectionHandler:
         mensagem = insere_imagem_json(
             "INSERT INTO Maquina "
             "(imagem, loja, modelo, preco, mes_fabricacao, ano_fabricacao) "
-            "VALUES (?, ?, ?, ?, ?, ?)", params)
+            "VALUES (?, ?, ?, ?, ?, ?)", params, imagem, nome_imagem)
 
         try:
             # tenta inserir os dados 
@@ -177,21 +186,5 @@ class ConnectionHandler:
             log.error("erro na comunicação com o servidor de dados")
             log.error("handle_produto, inserção de dados no banco")
             exit(4)
-        # se tudo certo, pede para o cliente enviar a imagem
-        self.conn.sendall(ok_resp())
-
-        # se consegue inserir recebe o binário da imagem 
-        # e repassa para o servidor de dados
-        ok = json.loads(self.conn_db.recv(BUFSIZE).decode())
-        if ok:
-            try:    
-                while True:
-                    bin_img = self.conn.recv(BUFSIZE)
-                    if not bin_img:
-                        break
-                    self.conn_db.sendall(bin_img)
-            except:
-                log.error("erro no envio da imagem")
-                exit(4)
         
         return True

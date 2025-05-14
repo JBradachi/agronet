@@ -1,3 +1,4 @@
+import base64
 from threading import Thread
 import socket
 import sqlite3
@@ -33,10 +34,12 @@ class ConnectionHandler:
 
             # A consulta, como descrito em docs/decisoes.md, é um JSON com dois
             # campos: um com a consulta em si e outro com seus parâmetros
-
-            mensagem = self.conn.recv(BUFSIZE).decode()
-            mensagem = json.loads(mensagem)
-            log.info(mensagem)
+            try:
+                mensagem = self.conn.recv(BUFSIZE).decode()
+                mensagem = json.loads(mensagem)
+            except Exception as e:
+                log.info("erro na decodificação da mensagem")
+                log.info(e)
             # tenta executar a consulta
             try:
                 conn_db = sqlite3.connect('./agronet.db')
@@ -56,10 +59,14 @@ class ConnectionHandler:
                 exit(4)
 
             # devolve a consulta em JSON
-            dados_json = json.dumps(dados)
-            self.conn.sendall(dados_json.encode())
-            log.info("Fecha conexão thread")
-            self.conn.close()
+            try:
+                dados_json = json.dumps(dados)
+                self.conn.sendall(dados_json.encode())
+                self.conn.close()
+            except Exception as e:
+                log.info("Erro ao devolver a consulta JSON")
+                log.info(e)
+
         except Exception as e:
             log.error("erro na tread de resposta")
             log.error(e)
@@ -80,25 +87,18 @@ class ConnectionHandler:
         try:
             self.cursor.execute(mensagem["consulta"],
                             tuple(mensagem["parametros"])).fetchall()
-        except Exception as ex:
-            log.error(ex)
+        except Exception as e:
+            log.error(e)
             log.error("erro ao fazer a consulta")
             log.error("pode ser a sintaxe")
             exit(6)
-        
-        self.conn.sendall(ok_resp())
 
         try:
-            nome_imagem = mensagem["parametros"][0]
-            with open(f"static/{nome_imagem}", 'wb') as f:
-                while True:
-                    bin_img = self.conn.recv(BUFSIZE)
-                    if not bin_img:
-                        break
-                    f.write(bin_img)
+            with open(f"static/{mensagem['nome_imagem']}", 'wb') as f:
+                f.write(base64.b64decode(mensagem['imagem']))
         except:
             log.error("erro no recebimento da imagem")
             exit(4)
         log.info("Enviou a imagem")
         conn_db.commit()
-        return ok_resp()
+        return True
