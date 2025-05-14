@@ -8,6 +8,7 @@ env/
 /servidor/__pycache__/
 /client/__pycache__/
 /banco/__pycache__/
+/protocolo/__pycache__/
 .dockerignore
 *.tar
 *.container

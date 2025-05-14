@@ -5,11 +5,9 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import base64
 import logging as log
-from protocolo.protocolo import JsonTSocket
 
-from protocolo.loja import Loja
-from protocolo.usuario import Usuario
-from protocolo.maquina import Maquina
+from protocolo.protocolo import JsonTSocket
+from protocolo.entidades import Loja, Usuario, Maquina
 
 HOST = "127.0.0.1"
 PORT = 6000
