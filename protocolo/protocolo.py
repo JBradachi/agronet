@@ -19,15 +19,15 @@ class JsonTSocket:
     def connect(self, host, port):
         self.socket.connect((host, port))
 
-    def bind(self, host, port):
-        self.socket.bind((host, port))
-
     def listen(self):
         self.socket.listen()
 
     def accept(self):
         sock, addr = self.socket.accept()
         return JsonTSocket(sock), addr
+    
+    def bind(self, host, port):
+        self.socket.bind((host, port))
 
     # Envia um dicionário qualquer no formato jsonT
     def send_dict(self, data: dict):

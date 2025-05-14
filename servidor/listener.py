@@ -1,6 +1,10 @@
+import sys,os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import socket
 from connection import ConnectionHandler
 import logging as log
+from protocolo.protocolo import JsonTSocket
 
 HOST = "127.0.0.1"
 PORT = 6000
@@ -10,8 +14,8 @@ def main():
     # Associa uma porta ao socket de escuta do sistema
     # (TCP == socket.SOCK_STREAM)
     # (IPv4 == socket.AF_INET)
-    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server.bind((HOST, PORT))
+    server = JsonTSocket()
+    server.bind(HOST, PORT)
     server.listen()
 
     log.info(f"Servidor de aplicação ouvindo em {HOST}:{PORT}")
