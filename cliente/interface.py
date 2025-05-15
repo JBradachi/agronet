@@ -57,7 +57,7 @@ class Interface(QWidget):
         self.resposta_label.setText(f"{resposta}")
 
     def abre_produto(self):
-        resposta = self.cliente.requisita_produto()
+        resposta = self.cliente.requisita_produto_completo()
         self.resposta_label.setText(f"{resposta}")
 
 

@@ -4,15 +4,15 @@ def consulta(sql, params):
                 }
     return consulta
 
-def insere_imagem(sql, params, base64_img, nome_imagem):
-    consulta = { "tipo_consulta" : "insere_imagem", "consulta" : sql,
+def insere_produto(sql, params, base64_img, nome_imagem):
+    consulta = { "tipo_consulta" : "insere_produto", "consulta" : sql,
                 "parametros" : params , "imagem_conteudo" : base64_img,
                 "imagem" : nome_imagem
                 }
     return consulta
 
-def requisita_imagem(sql, params):
-    consulta = { "tipo_consulta" : "requisita_produto", "consulta" : sql,
+def req_produto_completo(sql, params):
+    consulta = { "tipo_consulta" : "req_produto_completo", "consulta" : sql,
                 "parametros" : params
                 }
     return consulta

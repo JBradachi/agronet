@@ -71,4 +71,4 @@ INSERT INTO Modelo (fabricante, nome, descricao) VALUES
     'Linha de produto:	tratores agrícolas, Número de série	D049045, Número de catálogo	473575');
 
 INSERT INTO Maquina (loja, modelo, imagem, preco, mes_fabricacao, ano_fabricacao) VALUES
-  ("adminStore", "Challenger MT525D 4WD", 'static/CAT1.png', 394.23, 2, 2013);
+  ("adminStore", "Challenger MT525D 4WD", 'CAT1.png', 394.23, 2, 2013);

@@ -191,7 +191,7 @@ class ConnectionHandler:
         params = [nome_imagem, loja, modelo, preco,
                 mes_fabricacao, ano_fabricacao]
 
-        mensagem = envelope.insere_imagem(
+        mensagem = envelope.insere_produto(
             "INSERT INTO Maquina "
             "(imagem, loja, modelo, preco, mes_fabricacao, ano_fabricacao) "
             "VALUES (?, ?, ?, ?, ?, ?)", params, imagem_conteudo, nome_imagem)
@@ -213,7 +213,7 @@ class ConnectionHandler:
 
         params = [id_maquina,]
 
-        mensagem = envelope.consulta(
+        mensagem = envelope.req_produto_completo(
             "SELECT * FROM Maquina " 
             "WHERE id = ?", params)
         
@@ -225,9 +225,7 @@ class ConnectionHandler:
             exit(4)
 
         resposta = self.conn_db.recv_dict()
-
         self.conn.send_dict(resposta)
-
         return
 
 

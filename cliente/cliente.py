@@ -69,7 +69,7 @@ class Cliente:
         data = produto.dict()
         data["tipo_pedido"] = "cadastra_produto"
         try:
-            with open("static/gato.png", 'rb') as f:
+            with open(f"static/{nome_imagem}", 'rb') as f:
                 img_b64 = base64.b64encode(f.read()).decode('utf-8')
                 data["imagem_conteudo"] = img_b64
             return self.request(data)
@@ -77,8 +77,22 @@ class Cliente:
             log.error(e)
             log.error("falha em insere_produto")
 
-    def requisita_produto(self):
+    def requisita_produto_completo(self):
         id = 1
         data = { "tipo_pedido" : "requisita_produto", "id" : id }
-        return self.request(data)
+        data = self.request(data)
+        try:
+            nome_imagem = busca_nome_imagem(data)
+            imagem = data['imagem_conteudo']
+            with open(f"static/{nome_imagem}", 'wb') as f:
+                f.write(base64.b64decode(imagem))
+        except Exception as e:
+            log.error("erro no recebimento da imagem")
+            log.error(e)
+            exit(4)
+        log.info("imagem recebida com sucesso")
+        
+        return data["resultado"][0] 
 
+def busca_nome_imagem(data):
+    return data["resultado"][0][3]
