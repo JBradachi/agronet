@@ -48,6 +48,7 @@ class ConnectionHandler:
     # Executa a thread
     def run(self):
         try:
+            self.setup_socket_db()
             while True:
                 try:
                     pedido = self.conn.recv_dict()
@@ -67,7 +68,6 @@ class ConnectionHandler:
                     log.info("falha no handler da thread servidor")
                     log.info(e)
 
-                self.setup_socket_db()
 
                 handler(pedido)
 
