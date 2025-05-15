@@ -187,8 +187,8 @@ class ConnectionHandler:
         # loja = self.loja ? loja vai estar na conexão já
         loja = dados["loja"]
 
-        params = (nome_imagem, loja, modelo, preco,
-                mes_fabricacao, ano_fabricacao)
+        params = [nome_imagem, loja, modelo, preco,
+                mes_fabricacao, ano_fabricacao]
 
         #TODO: função que verifica se existe imagem de nome igual
         # e muda nome se tiver antes de mandar pro banco

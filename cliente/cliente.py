@@ -69,7 +69,7 @@ class Cliente:
         data = produto.dict()
         data["tipo_pedido"] = "cadastra_produto"
         try:
-            with open("gato.png", 'rb') as f:
+            with open("static/gato.png", 'rb') as f:
                 img_b64 = base64.b64encode(f.read()).decode('utf-8')
                 data["imagem_conteudo"] = img_b64
             return self.request(data)

@@ -87,6 +87,9 @@ class ConnectionHandler:
         self.conn.send_dict(resp)
 
     def handle_insere_imagem(self, msg):
+        # verifica se existe imagem com o mesmo nome no banco
+        msg = self.safe_name(msg)
+
         resp = self.exec_query(msg)
         if resp["status"] != 0:
             self.conn.send_dict(resp)
@@ -104,3 +107,21 @@ class ConnectionHandler:
             exit(4)
         log.info("imagem inserida com sucesso")
         self.conn.send_dict(resp)
+
+    def safe_name(self, msg):
+        # tenta encontrar um nome que não de problemas
+        while True:
+            verificacao = { "consulta" : "SELECT imagem FROM Maquina WHERE imagem = ?",
+            "parametros": (msg['imagem'],)}
+            existe = self.exec_query(verificacao)
+            if not existe["resultado"][0]:
+                break
+            nome_atual = msg['imagem'].split(".")
+            nome_atual[0] = nome_atual[0]+"-1"
+            nome_novo = ".".join(nome_atual)
+            msg['imagem'] = nome_novo
+            msg["parametros"][0] = nome_novo
+
+        return msg
+        
+    
