@@ -21,6 +21,7 @@ class ConnectionHandler:
             "cadastra_loja" : self.handle_cadastra_loja,
             "edita_produto" : self.handle_edita_produto,
             "cadastra_produto" : self.handle_cadastra_produto,
+            "requisita_produto" : self.handle_requisita_produto 
         }
 
         try:
@@ -91,14 +92,14 @@ class ConnectionHandler:
 
             resposta_db = self.conn_db.recv_dict()
             #TODO: abubleblé 
-            if not resposta_db or not resposta_db["resultado"][0]:
+            if not resposta_db or not resposta_db["resultado"]:
                 # sem resposta do banco => não existe tal usuário
                 resposta = envelope.resposta_login(False)
             else:
                 # Autentica o usuário nessa conexão
                 self.token = secrets.token_urlsafe(16)
                 self.user = nome
-                self.loja = resposta_db["resultado"][0][0]
+                self.loja = resposta_db["resultado"][0]
                 resposta = envelope.resposta_login(self.token)
 
             self.conn.send_dict(resposta)
@@ -190,8 +191,6 @@ class ConnectionHandler:
         params = [nome_imagem, loja, modelo, preco,
                 mes_fabricacao, ano_fabricacao]
 
-        #TODO: função que verifica se existe imagem de nome igual
-        # e muda nome se tiver antes de mandar pro banco
         mensagem = envelope.insere_imagem(
             "INSERT INTO Maquina "
             "(imagem, loja, modelo, preco, mes_fabricacao, ano_fabricacao) "
@@ -202,11 +201,35 @@ class ConnectionHandler:
             self.conn_db.send_dict(mensagem)
         except:
             log.error("erro na comunicação com o servidor de dados")
-            log.error("handle_produto, inserção de dados no banco")
+            log.error("handle_cadastra_produto, inserção de dados no banco")
             exit(4)
 
         self.conn.send_dict(envelope.ok_resp())
         return
+    
+    # { "tipo_pedido": "requisita_produto", dados_produto...}
+    def handle_requisita_produto(self, dados):
+        id_maquina = dados["id"]
+
+        params = [id_maquina,]
+
+        mensagem = envelope.consulta(
+            "SELECT * FROM Maquina " 
+            "WHERE id = ?", params)
+        
+        try: 
+            self.conn_db.send_dict(mensagem)
+        except:
+            log.error("erro na comunicação com o servidor de dados")
+            log.error("handle_requisita_produto, inserção de dados no banco")
+            exit(4)
+
+        resposta = self.conn_db.recv_dict()
+
+        self.conn.send_dict(resposta)
+
+        return
+
 
 # ------------------------------------------------------------------------------
 

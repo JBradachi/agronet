@@ -76,3 +76,9 @@ class Cliente:
         except Exception as e:
             log.error(e)
             log.error("falha em insere_produto")
+
+    def requisita_produto(self):
+        id = 1
+        data = { "tipo_pedido" : "requisita_produto", "id" : id }
+        return self.request(data)
+

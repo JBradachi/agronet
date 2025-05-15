@@ -67,7 +67,7 @@ class ConnectionHandler:
             res = self.cursor.execute(consulta, params).fetchall(),
             return {
                 "status" : 0,
-                "resultado" : res
+                "resultado" : res[0]
             }
         except sqlite3.IntegrityError as ex:
             # Esse erro ocorre principalmente quando a chave primária do item
@@ -114,7 +114,7 @@ class ConnectionHandler:
             verificacao = { "consulta" : "SELECT imagem FROM Maquina WHERE imagem = ?",
             "parametros": (msg['imagem'],)}
             existe = self.exec_query(verificacao)
-            if not existe["resultado"][0]:
+            if not existe["resultado"]:
                 break
             nome_atual = msg['imagem'].split(".")
             nome_atual[0] = nome_atual[0]+"-1"

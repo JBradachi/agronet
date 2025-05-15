@@ -36,6 +36,10 @@ class Interface(QWidget):
         self.botao2.clicked.connect(self.envia_produto)
         self.layout.addWidget(self.botao2)
 
+        self.botao3 = QPushButton("testa_recebimento_produto")
+        self.botao3.clicked.connect(self.abre_produto)
+        self.layout.addWidget(self.botao3)
+
         self.resposta_label = QLabel("")
         self.layout.addWidget(self.resposta_label)
 
@@ -50,6 +54,10 @@ class Interface(QWidget):
 
     def envia_produto(self):
         resposta = self.cliente.insere_produto()
+        self.resposta_label.setText(f"{resposta}")
+
+    def abre_produto(self):
+        resposta = self.cliente.requisita_produto()
         self.resposta_label.setText(f"{resposta}")
 
 

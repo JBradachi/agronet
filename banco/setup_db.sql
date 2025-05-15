@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS Modelo (
 -- Cada máquina corresponde a um modelo específico
 -- Cada máquina é vendida por uma loja específica
 CREATE TABLE IF NOT EXISTS Maquina (
-  id INTEGER AUTO_INCREMENT,
+  id INTEGER PRIMARY KEY, -- AUTO_INCREMENT por padrão
   loja TEXT NOT NULL,
   modelo INTEGER NOT NULL,
   imagem TEXT NOT NULL,
@@ -51,7 +51,6 @@ CREATE TABLE IF NOT EXISTS Maquina (
   ano_fabricacao INTEGER NOT NULL,
   visivel INTEGER DEFAULT 1 NOT NULL,
 
-  PRIMARY KEY (id),
   FOREIGN KEY (loja) REFERENCES Loja (nome),
   FOREIGN KEY (modelo) REFERENCES Modelo (nome)
 );
