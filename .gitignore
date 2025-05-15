@@ -6,8 +6,10 @@ env/
 *.log
 *.tmp
 /servidor/__pycache__/
-/client/__pycache__/
+/cliente/__pycache__/
+/cliente/static/
 /banco/__pycache__/
+/banco/static/
 /protocolo/__pycache__/
 .dockerignore
 *.tar
