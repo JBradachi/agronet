@@ -2,7 +2,8 @@ import sys,os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from threading import Thread
-import json, secrets, struct
+import secrets, struct
+import envelope
 import logging as log
 from protocolo.protocolo import JsonTSocket
 
@@ -10,53 +11,18 @@ DB_HOST = "127.0.0.2"
 DB_PORT = 3600
 PAYLOAD_SIZE = struct.calcsize("!Q")
 
-def monta_frame(dados):
-    dados_bin = json.dumps(dados).encode()
-    tamanho_msg = struct.pack("!Q", len(dados_bin))
-
-    return tamanho_msg+dados_bin
-
-def consulta_json(sql, params):
-    consulta = { "tipo_consulta" : "padrao", "consulta" : sql,
-                "parametros" : params
-                }
-    return consulta
-
-def insere_imagem_json(sql, params, base64_img, nome_imagem):
-    consulta = { "tipo_consulta" : "insere_imagem", "consulta" : sql,
-                "parametros" : params , "imagem_conteudo" : base64_img,
-                "imagem" : nome_imagem
-                }
-    return consulta
-
-def requisita_imagem_json(sql, params):
-    consulta = { "tipo_consulta" : "requisita_produto", "consulta" : sql,
-                "parametros" : params
-                }
-    return consulta
-
-def resposta_login(token):
-    # token pode ser
-    # - uma URL segura de 32 caracteres se sucesso no login
-    # - valor false se falhou no login
-    if token:
-        resposta = { "token" : token , "status" : 0}
-        return True, resposta
-    else:
-        resposta = { "status" : -1 , "erro" : "Falha no login" }
-        return False, resposta
-
-def ok_resp():
-    resposta = { "status" : 0 }
-    return resposta
-
-def db_error():
-    log.error("erro na comunicação com o servidor de dados")
-    exit(4)
-
 # Classe que cria threads e lida com conexões
 class ConnectionHandler:
     def __init__(self, conn: JsonTSocket, addr):
+        
+        # inicializa o dicionário de métodos
+        self.handlers = {
+            "login" : self.handle_login,
+            "cadastra_loja" : self.handle_cadastra_loja,
+            "edita_produto" : self.handle_edita_produto,
+            "cadastra_produto" : self.handle_cadastra_produto,
+        }
+
         try:
             self.conn = conn
             self.addr_cliente = addr
@@ -83,39 +49,30 @@ class ConnectionHandler:
     def run(self):
         try:
             while True:
-                self.setup_socket_db()
                 try:
                     pedido = self.conn.recv_dict()
                 except Exception as e:
                     log.error("erro na decodificação do pedido")
                     log.error(e)
 
-                if not pedido:
-                    break # conexão encerrada
+                if not pedido: break # conexão encerrada
 
-                # O campo 'tipo_pedido' diz-nos como lidar com o pedido recebido
-                ok = True
-                match pedido["tipo_pedido"]:
-                    case "login":
-                        token = self.handle_login(pedido)
-                        ok, resposta = resposta_login(token)
-                        self.conn.send_dict(resposta)
-                    case "cadastra_loja":
-                        resposta = self.handle_cadastra_loja(pedido)
-                        self.conn.send_dict(resposta)
-                    case "edita_produto":
-                        ok = self.handle_edita_produto(pedido)
-                        if ok: self.conn.send_dict(ok_resp())
-                    case "cadastro_produto":
-                        ok = self.handle_produto(pedido)
-                        if ok: self.conn.send_dict(ok_resp())
-                    case _:
+                try:
+                    handler = self.handlers.get(pedido["tipo_pedido"], None)
+                    if not handler:
                         log.error("tipo de pedido não reconhecido")
-                if not ok:
-                    # TODO responder ao cliente aqui
-                    log.info("O pedido não foi bem sucedido")
+                        log.error(pedido["tipo_pedido"])
+                        continue # próxima mensagem
+                except Exception as e:
+                    log.info("falha no handler da thread servidor")
+                    log.info(e)
+
+                self.setup_socket_db()
+
+                handler(pedido)
+
         except Exception as e:
-            log.error("erro ao contatar o servidor de dados")
+            log.error("erro ao executar a thread do servidor")
             log.error(e)
             exit(4) # não há como continuar
 
@@ -126,7 +83,7 @@ class ConnectionHandler:
         nome = dados["nome"]
         senha = dados["senha"]
         # O usuário existe com essa senha no banco de dados?
-        mensagem = consulta_json(
+        mensagem = envelope.consulta(
                 "SELECT loja FROM Usuario "
                 "WHERE nome = ? AND senha = ?", (nome, senha))
         try:
@@ -136,12 +93,16 @@ class ConnectionHandler:
             #TODO: abubleblé 
             if not resposta_db or not resposta_db["resultado"][0]:
                 # sem resposta do banco => não existe tal usuário
-                return False
-            self.token = secrets.token_urlsafe(16)
-            self.user = nome
-            # Alerta de linha absolutamente horrorosa abaixo
-            self.loja = resposta_db["resultado"][0][0]
-            return self.token # deu bom, retorna token!
+                resposta = envelope.resposta_login(False)
+            else:
+                # Autentica o usuário nessa conexão
+                self.token = secrets.token_urlsafe(16)
+                self.user = nome
+                self.loja = resposta_db["resultado"][0][0]
+                resposta = envelope.resposta_login(self.token)
+
+            self.conn.send_dict(resposta)
+
         except Exception as e: 
             db_error()
             log.info(e)
@@ -150,7 +111,7 @@ class ConnectionHandler:
     def handle_edita_produto(self, dados):
         id_maquina = dados["id"]
         visivel = 1 if dados["visivel"] else 0
-        mensagem = consulta_json(
+        mensagem = envelope.consulta(
                 "UPDATE Maquina "
                 "SET visivel = ? "
                 "WHERE id = ?", (id_maquina, visivel))
@@ -159,7 +120,9 @@ class ConnectionHandler:
             # Não acho que a resposta do banco interessa muito nesse caso,
             # então simplesmente não faço nada com ela
             self.conn_db.recv_dict()
-            return True
+            
+            self.conn.send_dict(envelope.ok_resp())
+
         except: db_error()
 
     # { "tipo_pedido" : "cadastra_loja", dados_loja... }
@@ -174,7 +137,7 @@ class ConnectionHandler:
 
         # TODO verificar se o usuário já não tem uma loja
         # Primeiramente, adicionamos a loja em si no BD
-        mensagem = consulta_json(
+        mensagem = envelope.consulta(
                 "INSERT INTO Loja "
                 "(nome, dia_criacao, mes_criacao, ano_criacao, "
                   "cidade, estado, descricao) VALUES "
@@ -184,7 +147,7 @@ class ConnectionHandler:
         
         # Então, atualizamos o usuário atual com a chave estrangeira
         # referindo-se à loja
-        mensagem2 = consulta_json(
+        mensagem2 = envelope.consulta(
                 "UPDATE Usuario "
                 "SET loja = ? "
                 "WHERE nome = ?",
@@ -196,20 +159,18 @@ class ConnectionHandler:
             resp_db = self.conn_db.recv_dict()
 
             if int(resp_db["status"]) != 0:
-                # Erro: a loja já existe. Repassamos o erro para o servidor
+                # Erro: a loja já existe. Repassamos o erro para o cliente
                 log.error("Erro!")
-                return json.dumps(resp_db)
+                self.conn.send_dict(resp_db)
+                return 
 
             self.conn_db.send_dict(mensagem2)
             self.conn_db.recv_dict()
-            return ok_resp()
+            self.conn.send_dict(envelope.ok_resp())
         except: db_error()
 
-    # { "tipo_pedido" : "cadastro_produto", "modelo" : <modelo>,
-    # "preco" : <preco>, "mes_fabricacao" : <mes_fabricacao>,
-    # "ano_fabricacao" : <ano_fabricacao>, "imagem" : <nome_imagem>
-    # "imagem_conteudo" : base64_img }
-    def handle_produto(self, dados):
+    # { "tipo_pedido" : "cadastro_produto", dados_produto... }
+    def handle_cadastra_produto(self, dados):
         # if not self.token:
         #     log.error("Usuário não logado, favor logar")
         #     return
@@ -219,11 +180,11 @@ class ConnectionHandler:
         #     return
         modelo = dados["modelo"]
         preco = dados["preco"]
-        mes_fabricacao = dados["mes_fabricacao"]
-        ano_fabricacao = dados["ano_fabricacao"]
+        mes_fabricacao = int(dados["mes_fabricacao"])
+        ano_fabricacao = int(dados["ano_fabricacao"])
         nome_imagem = dados["imagem"]
         imagem_conteudo = dados["imagem_conteudo"]
-        # loja = self.loja
+        # loja = self.loja ? loja vai estar na conexão já
         loja = dados["loja"]
 
         params = (nome_imagem, loja, modelo, preco,
@@ -231,9 +192,7 @@ class ConnectionHandler:
 
         #TODO: função que verifica se existe imagem de nome igual
         # e muda nome se tiver antes de mandar pro banco
-        #TODO: self guardar a loja do usuário, (se tiver)
-        #TODO: banco ter um tipo pedido tambem: recebe_imagem e consulta
-        mensagem = insere_imagem_json(
+        mensagem = envelope.insere_imagem(
             "INSERT INTO Maquina "
             "(imagem, loja, modelo, preco, mes_fabricacao, ano_fabricacao) "
             "VALUES (?, ?, ?, ?, ?, ?)", params, imagem_conteudo, nome_imagem)
@@ -246,4 +205,11 @@ class ConnectionHandler:
             log.error("handle_produto, inserção de dados no banco")
             exit(4)
 
-        return True
+        self.conn.send_dict(envelope.ok_resp())
+        return
+
+# ------------------------------------------------------------------------------
+
+def db_error():
+    log.error("erro na comunicação com o servidor de dados")
+    exit(4)

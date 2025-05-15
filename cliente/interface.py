@@ -50,6 +50,8 @@ class Interface(QWidget):
 
     def envia_produto(self):
         resposta = self.cliente.insere_produto()
+        self.resposta_label.setText(f"{resposta}")
+
 
 def main():
     app = QApplication(sys.argv)

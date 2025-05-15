@@ -67,7 +67,7 @@ class Cliente:
 
         # Convertendo para o dicionário adequado
         data = produto.dict()
-        data["tipo_pedido"] = "cadastro_produto"
+        data["tipo_pedido"] = "cadastra_produto"
         try:
             with open("gato.png", 'rb') as f:
                 img_b64 = base64.b64encode(f.read()).decode('utf-8')

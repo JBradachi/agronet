@@ -10,6 +10,7 @@
     - [Resposta login](#resposta-login)
   - [Mensagens de requisição do cliente](#mensagens-de-requisição-do-cliente)
     - [Requisição login](#requisição-login)
+    - [Cadastro de máquina](#cadastro-de-máquina)
 
 ## Representação Externa de dados
 
@@ -44,3 +45,10 @@ O JSON enviado para a requisição de login é composto por três campos:
 
 - `tipo_pedido` para essa requisição será _"login"_
 - `nome` e `senha` são os valores passados para a validação.
+
+### Cadastro de máquina
+
+<!-- { "tipo_pedido" : "cadastra_produto", "modelo" : <modelo>,
+"preco" : <preco>, "mes_fabricacao" : <mes_fabricacao>,
+"ano_fabricacao" : <ano_fabricacao>, "imagem" : <nome_imagem>
+"imagem_conteudo" : base64_img } -->
