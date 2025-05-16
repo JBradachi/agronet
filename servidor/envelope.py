@@ -21,6 +21,12 @@ def req_produto_completo(sql, params):
         "parametros" : params
     }
 
+def consulta_simples(sql):
+    return {
+        "tipo_consulta" : "padrao",
+        "consulta" : sql,
+    }
+
 def resposta_login(token):
     # token pode ser
     # - uma URL segura de 32 caracteres se sucesso no login

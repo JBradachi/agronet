@@ -40,6 +40,10 @@ class Interface(QWidget):
         self.botao3.clicked.connect(self.abre_produto)
         self.layout.addWidget(self.botao3)
 
+        self.botao3 = QPushButton("testa_enviar_todos_produtos")
+        self.botao3.clicked.connect(self.homepage)
+        self.layout.addWidget(self.botao3)
+
         self.resposta_label = QLabel("")
         self.layout.addWidget(self.resposta_label)
 
@@ -60,6 +64,9 @@ class Interface(QWidget):
         resposta = self.cliente.requisita_produto_completo()
         self.resposta_label.setText(f"{resposta}")
 
+    def homepage(self):
+        resposta = self.cliente.requisita_todos_produtos()
+        self.resposta_label.setText(f"{resposta}")
 
 def main():
     app = QApplication(sys.argv)

@@ -37,7 +37,7 @@ Repositório dedicado ao desenvolvimento do trabalho pratico de sistemas distrib
     - [ ] Pagina principal
       - [ ] get lojas (tipo pedido mostra_lojas, filtro) bradas
       - [ ] get produtos (tipo pedido mostras_produtos, filtro, opcional loja) dudu
-    - [ ] Pagina produto (info_produto/ imagens_produto) bradas
+    - [X] Pagina produto (info_produto/ imagens_produto) bradas
   - [ ] "Rotas de resposta"
 - [X] Docker
 

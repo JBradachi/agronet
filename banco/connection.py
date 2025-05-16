@@ -64,8 +64,10 @@ class ConnectionHandler:
     def exec_query(self, msg):
         consulta = msg["consulta"]
         params = msg["parametros"]
+        log.info(f"consulta {consulta}")
         try:
             res = self.cursor.execute(consulta, params).fetchall()
+            log.info(" executa a query")
             return {
                 "status" : 0,
                 "resultado" : res
@@ -96,6 +98,7 @@ class ConnectionHandler:
             log.error(e)
 
         resp = self.exec_query(msg)
+        
         if resp["status"] != 0:
             self.conn.send_dict(resp)
             return
@@ -111,7 +114,6 @@ class ConnectionHandler:
             log.error("erro no recebimento da imagem")
             exit(4)
         log.info("imagem inserida com sucesso")
-        self.conn.send_dict(resp)
 
     def safe_name(self, msg):
         # tenta encontrar um nome que não de problemas
@@ -134,7 +136,6 @@ class ConnectionHandler:
         # pega o nome no banco
         try:
             resp = self.exec_query(msg)
-
             nome_imagem = self.nome_imagem(msg)
 
             if resp["status"] != 0:

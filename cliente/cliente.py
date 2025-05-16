@@ -83,6 +83,8 @@ class Cliente:
             log.error(e)
             log.error("falha em insere_produto")
 
+    # a partir de um id de máquina, retorna todas as info delas 
+    # em um dicionário
     def requisita_produto_completo(self):
         id = 1
         data = { "tipo_pedido" : "requisita_produto", "id" : id }
@@ -99,6 +101,19 @@ class Cliente:
         log.info("imagem recebida com sucesso")
         
         return data["resultado"][0] 
+    
+    # retorna todas as máquinas (id, loja, nome_imagem, modelo, visibilidade?)
+    # se estiverem visíveis mostra.
+    def requisita_todos_produtos(self):
+        try:
+            data = { "tipo_pedido" : "todos_produtos" }
+            data = self.request(data)
+        except Exception as e:
+            log.error("erro em requisita todos os produtos ")
+            log.error(e)
+        
+        return data
 
 def busca_nome_imagem(data):
+    log.info(f"data {data}")
     return data["resultado"][0][3]
