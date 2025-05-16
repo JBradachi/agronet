@@ -49,7 +49,7 @@ class Interface(QWidget):
         nome = self.input_nome.text()
         senha = self.input_senha.text()
         if nome and senha:
-            resposta = self.cliente.login(nome, senha)
+            resposta = self.cliente.cadastra_usuario(nome, senha)
             self.resposta_label.setText(f"{resposta}")
 
     def envia_produto(self):

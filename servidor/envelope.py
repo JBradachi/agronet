@@ -1,21 +1,25 @@
 def consulta(sql, params):
-    consulta = { "tipo_consulta" : "padrao", "consulta" : sql,
-                "parametros" : params
-                }
-    return consulta
+    return {
+        "tipo_consulta" : "padrao",
+        "consulta" : sql,
+        "parametros" : params
+    }
 
 def insere_produto(sql, params, base64_img, nome_imagem):
-    consulta = { "tipo_consulta" : "insere_produto", "consulta" : sql,
-                "parametros" : params , "imagem_conteudo" : base64_img,
-                "imagem" : nome_imagem
-                }
-    return consulta
+    return {
+        "tipo_consulta" : "insere_produto",
+        "consulta" : sql,
+        "parametros" : params ,
+        "imagem_conteudo" : base64_img,
+        "imagem" : nome_imagem
+    }
 
 def req_produto_completo(sql, params):
-    consulta = { "tipo_consulta" : "req_produto_completo", "consulta" : sql,
-                "parametros" : params
-                }
-    return consulta
+    return {
+        "tipo_consulta" : "req_produto_completo",
+        "consulta" : sql,
+        "parametros" : params
+    }
 
 def resposta_login(token):
     # token pode ser

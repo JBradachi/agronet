@@ -65,10 +65,10 @@ class ConnectionHandler:
         consulta = msg["consulta"]
         params = msg["parametros"]
         try:
-            res = self.cursor.execute(consulta, params).fetchall(),
+            res = self.cursor.execute(consulta, params).fetchall()
             return {
                 "status" : 0,
-                "resultado" : res[0]
+                "resultado" : res
             }
         except sqlite3.IntegrityError as ex:
             # Esse erro ocorre principalmente quando a chave primária do item

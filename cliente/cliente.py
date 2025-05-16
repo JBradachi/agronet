@@ -40,6 +40,12 @@ class Cliente:
         data["tipo_pedido"] = "login"
         return self.request(data)
 
+    def cadastra_usuario(self, nome, senha):
+        usuario = Usuario(nome, senha)
+        data = usuario.dict()
+        data["tipo_pedido"] = "cadastra_usuario"
+        return self.request(data)
+
     def cadastra_loja(self, nome, dia_criacao, mes_criacao, ano_criacao,
         cidade, estado, descricao):
         loja = Loja(nome, dia_criacao, mes_criacao, ano_criacao,

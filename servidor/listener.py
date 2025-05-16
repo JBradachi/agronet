@@ -1,10 +1,9 @@
 import sys,os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import socket
-from connection import ConnectionHandler
 import logging as log
 from protocolo.protocolo import JsonTSocket
+from connection import ConnectionHandler
 
 HOST = "127.0.0.1"
 PORT = 6000

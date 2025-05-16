@@ -14,14 +14,15 @@ PAYLOAD_SIZE = struct.calcsize("!Q")
 # Classe que cria threads e lida com conexões
 class ConnectionHandler:
     def __init__(self, conn: JsonTSocket, addr):
-        
+
         # inicializa o dicionário de métodos
         self.handlers = {
             "login" : self.handle_login,
+            "cadastra_usuario" : self.handle_cadastra_usuario,
             "cadastra_loja" : self.handle_cadastra_loja,
             "edita_produto" : self.handle_edita_produto,
             "cadastra_produto" : self.handle_cadastra_produto,
-            "requisita_produto" : self.handle_requisita_produto 
+            "requisita_produto" : self.handle_requisita_produto
         }
 
         try:
@@ -65,12 +66,10 @@ class ConnectionHandler:
                         log.error("tipo de pedido não reconhecido")
                         log.error(pedido["tipo_pedido"])
                         continue # próxima mensagem
+                    handler(pedido)
                 except Exception as e:
                     log.info("falha no handler da thread servidor")
                     log.info(e)
-
-
-                handler(pedido)
 
         except Exception as e:
             log.error("erro ao executar a thread do servidor")
@@ -78,6 +77,43 @@ class ConnectionHandler:
             exit(4) # não há como continuar
 
 # ------------------------------------------------------------------------------
+
+    # { "tipo_pedido" : "cadastra_usuario", "nome" : <nome>, "senha" : <senha> }
+    def handle_cadastra_usuario(self, dados):
+        nome = dados["nome"]
+        senha = dados["senha"]
+        # O usuário já existe no banco?
+        msg = envelope.consulta(
+                "SELECT * FROM Usuario "
+                "WHERE nome = ?", (nome,))
+        try:
+            self.conn_db.send_dict(msg)
+            resposta_db = self.conn_db.recv_dict()
+            if not resposta_db or not resposta_db["resultado"]:
+                # Esse aqui é caso que esperamos => usuário não existente
+                # Cadastramos ele no banco de dado
+                log.info("feito")
+                msg = envelope.consulta(
+                        "INSERT INTO Usuario (nome, senha) "
+                        "VALUES (?, ?)", (nome, senha))
+                try:
+                    self.conn_db.send_dict(msg)
+                    # A resposta não interessa muito aqui, creio eu
+                    resposta_db = self.conn_db.recv_dict()
+                except Exception as ex:
+                    db_error()
+                    log.error(ex)
+
+                self.user = nome
+                self.token = secrets.token_urlsafe(16)
+                resposta = envelope.resposta_login(self.token)
+            else:
+                resposta = envelope.resposta_login(False)
+
+            self.conn.send_dict(resposta)
+        except Exception as ex:
+            db_error()
+            log.info(ex)
 
     # { "tipo_pedido" : "login", "nome" : <nome>, "senha" : <senha> }
     def handle_login(self, dados):
@@ -91,7 +127,7 @@ class ConnectionHandler:
             self.conn_db.send_dict(mensagem)
 
             resposta_db = self.conn_db.recv_dict()
-            #TODO: abubleblé 
+            #TODO: abubleblé
             if not resposta_db or not resposta_db["resultado"]:
                 # sem resposta do banco => não existe tal usuário
                 resposta = envelope.resposta_login(False)
@@ -104,7 +140,7 @@ class ConnectionHandler:
 
             self.conn.send_dict(resposta)
 
-        except Exception as e: 
+        except Exception as e:
             db_error()
             log.info(e)
 
@@ -121,7 +157,7 @@ class ConnectionHandler:
             # Não acho que a resposta do banco interessa muito nesse caso,
             # então simplesmente não faço nada com ela
             self.conn_db.recv_dict()
-            
+
             self.conn.send_dict(envelope.ok_resp())
 
         except: db_error()
@@ -145,7 +181,7 @@ class ConnectionHandler:
                 "(?, ?, ?, ?, ?, ?, ?)",
                 (nome, dia_criacao, mes_criacao, ano_criacao,
                  cidade, estado, descricao))
-        
+
         # Então, atualizamos o usuário atual com a chave estrangeira
         # referindo-se à loja
         mensagem2 = envelope.consulta(
@@ -163,7 +199,7 @@ class ConnectionHandler:
                 # Erro: a loja já existe. Repassamos o erro para o cliente
                 log.error("Erro!")
                 self.conn.send_dict(resp_db)
-                return 
+                return
 
             self.conn_db.send_dict(mensagem2)
             self.conn_db.recv_dict()
@@ -206,18 +242,15 @@ class ConnectionHandler:
 
         self.conn.send_dict(envelope.ok_resp())
         return
-    
+
     # { "tipo_pedido": "requisita_produto", dados_produto...}
     def handle_requisita_produto(self, dados):
         id_maquina = dados["id"]
-
         params = [id_maquina,]
-
         mensagem = envelope.req_produto_completo(
-            "SELECT * FROM Maquina " 
+            "SELECT * FROM Maquina "
             "WHERE id = ?", params)
-        
-        try: 
+        try:
             self.conn_db.send_dict(mensagem)
         except:
             log.error("erro na comunicação com o servidor de dados")

@@ -32,7 +32,7 @@ Repositório dedicado ao desenvolvimento do trabalho pratico de sistemas distrib
     - [X] login (login)
     - [X] Cadastro de máquina (cadastro_produto) bradas
     - [X] Cadastro de loja (cadastro_loja) dudu
-    - [ ] Cadastro usuário (cadastro_usuario) dudu
+    - [X] Cadastro usuário (cadastro_usuario) dudu
     - [X] Edita máquina (edita_produto) dudu
     - [ ] Pagina principal
       - [ ] get lojas (tipo pedido mostra_lojas, filtro) bradas
