@@ -250,7 +250,9 @@ class ConnectionHandler:
         id_maquina = dados["id"]
         params = [id_maquina,]
         mensagem = envelope.consulta(
-            "SELECT * FROM Maquina "
+            "SELECT * "
+            "FROM Maquina INNER JOIN Modelo "
+            "ON Maquina.modelo = Modelo.nome "
             "WHERE id = ?", params)
         try:
             self.conn_db.send_dict(mensagem)

@@ -118,7 +118,7 @@ class Cliente:
         except Exception as e:
             log.error("erro em requisita todos os produtos ")
             log.error(e)
-        return data
+        return produtos
 
     # Retorna todas as informações sobre uma loja específica
     def requisita_loja(self, nome_loja):
