@@ -3,8 +3,11 @@
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton
+from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QStackedWidget
 from cliente import Cliente
+from telas.login import TelaLogin
+from telas.cadastro import TelaCadastro
+from telas.mainScreen import TelaMainScreen
 
 class Interface(QWidget):
     def __init__(self):
@@ -70,8 +73,33 @@ class Interface(QWidget):
 
 def main():
     app = QApplication(sys.argv)
+    
     janela = Interface()
     janela.show()
+
+    cliente = Cliente()
+    stack = QStackedWidget()
+    tela_login = TelaLogin(stack, cliente)
+    tela_cadastro = TelaCadastro(stack, cliente)
+    tela_main = TelaMainScreen(stack, cliente)
+
+    stack.addWidget(tela_login)     # index 0
+    stack.addWidget(tela_cadastro)  # index 1
+    stack.addWidget(tela_main)      # index 2
+    
+    stack.setWindowTitle("Cliente Distribuído")
+
+    stack.setStyleSheet("""
+        QWidget {
+            background-color: white;
+        }
+        QLineEdit, QPushButton {
+            background-color: white;
+        }
+    """)
+
+    stack.show()
+
     sys.exit(app.exec())
 
 if __name__ == "__main__":
