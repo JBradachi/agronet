@@ -24,6 +24,7 @@ class ConnectionHandler:
             "cadastra_produto" : self.handle_cadastra_produto,
             "requisita_produto" : self.handle_requisita_produto,
             "todos_produtos" : self.handle_todos_produtos,
+            "requisita_loja" : self.handle_requisita_loja,
         }
 
         try:
@@ -242,7 +243,6 @@ class ConnectionHandler:
             exit(4)
 
         self.conn.send_dict(envelope.ok_resp())
-        return
 
     # { "tipo_pedido": "requisita_produto", dados_produto...}
     def handle_requisita_produto(self, dados):
@@ -260,20 +260,27 @@ class ConnectionHandler:
 
         resposta = self.conn_db.recv_dict()
         self.conn.send_dict(resposta)
-        return
 
+    # { "tipo_pedido" : "todos_produtos" }
     def handle_todos_produtos(self, dados):
-
         params = ()
         mensagem = envelope.consulta(
             "SELECT id, loja, modelo, imagem, preco, visivel "
             "FROM Maquina", params)
-        
+
         self.conn_db.send_dict(mensagem)
         resposta = self.conn_db.recv_dict()
-
         self.conn.send_dict(resposta)
-        return 
+
+    # { "tipo_pedido" : "requisita_loja", "nome" : <nome> }
+    def handle_requisita_loja(self, dados):
+        nome = dados["nome"]
+        msg = envelope.consulta(
+                "SELECT * FROM Loja WHERE nome  = ?", (nome))
+        self.conn_db.send_dict(msg)
+        resposta = self.conn_db.recv_dict()
+        self.conn.send_dict(resposta)
+
 # ------------------------------------------------------------------------------
 
 def db_error():

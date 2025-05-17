@@ -84,15 +84,14 @@ class Cliente:
             log.error(e)
             log.error("falha em insere_produto")
 
-    # a partir de um id de máquina, retorna todas as info delas 
+    # a partir de um id de máquina, retorna todas as info delas
     # em um dicionário
     def requisita_produto_completo(self):
         id = 1
         data = { "tipo_pedido" : "requisita_produto", "id" : id }
         data = self.request(data)
-        
         # TODO: fazer verificação se já possúi a imagem no banco
-        
+
         try:
             nome_imagem = busca_nome_imagem(data)
             imagem = data['imagem_conteudo']
@@ -103,9 +102,9 @@ class Cliente:
             log.error(e)
             exit(4)
         log.info("imagem recebida com sucesso")
-        
-        return data["resultado"][0] 
-    
+
+        return data["resultado"][0]
+
     # retorna todas as máquinas (id, loja, nome_imagem, modelo, visibilidade?)
     # se estiverem visíveis mostra.
     def requisita_todos_produtos(self):
@@ -120,13 +119,23 @@ class Cliente:
             # for imagem in imagens_faltantes:
             #   tread = Thread(target=self.requisita_imagem, args=(imagem,))
             #   tread.start()
-            
+
 
         except Exception as e:
             log.error("erro em requisita todos os produtos ")
             log.error(e)
-        
         return data
+
+    # Retorna todas as informações sobre uma loja específica
+    def requisita_loja(self, nome_loja):
+        try:
+            msg = { "tipo_pedido" : "requisita_loja", "nome" : nome_loja}
+            loja = self.request(msg)
+            # TODO converter dicionário em obj da classe Loja
+            return loja
+        except Exception as ex:
+            log.error("erro em requisita loja")
+            log.error(ex)
 
     # thread chama isso que coloca em static uma imagem
     def requisita_imagem(nome_imagem):
@@ -134,7 +143,7 @@ class Cliente:
         # acho que se aproveitar o mesmo socket pode dar pau
 
         # servidor devolve binário da imagem
-        
+
         # constrói imagem na pasta static
         pass
 

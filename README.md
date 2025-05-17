@@ -34,9 +34,9 @@ Repositório dedicado ao desenvolvimento do trabalho pratico de sistemas distrib
     - [X] Cadastro de loja (cadastro_loja) dudu
     - [X] Cadastro usuário (cadastro_usuario) dudu
     - [X] Edita máquina (edita_produto) dudu
-    - [ ] Pagina principal
-      - [ ] get lojas (tipo pedido mostra_lojas, filtro) bradas
-      - [ ] get produtos (tipo pedido mostras_produtos, filtro, opcional loja) dudu
+    - [X] Pagina principal
+      - [ ] get lojas (tipo pedido mostra_lojas, filtro) dudu
+      - [X] get produtos (tipo pedido mostras_produtos, filtro, opcional loja) bradas
     - [X] Pagina produto (info_produto/ imagens_produto) bradas
   - [ ] "Rotas de resposta"
 - [X] Docker
