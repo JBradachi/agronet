@@ -62,6 +62,8 @@ class Cliente:
             "visivel" : bool(visivel),
         })
 
+    # TODO: na integração add os parametros
+    # loja, modelo, preco, mes_fabricacao, ano_fabricacao, nome_imagem
     def insere_produto(self):
         loja = "adminStore"
         modelo = "Challenger MT525D 4WD"
@@ -86,11 +88,11 @@ class Cliente:
 
     # a partir de um id de máquina, retorna todas as info delas
     # em um dicionário
+    # TODO: na integração adicionar id como parametro
     def requisita_produto_completo(self):
         id = 1
         data = { "tipo_pedido" : "requisita_produto", "id" : id }
         data = self.request(data)
-        # TODO: fazer verificação se já possúi a imagem no banco
         
         nome_imagem = busca_nome_imagem(data)
         if nome_imagem not in os.listdir("static"):
@@ -169,19 +171,32 @@ class Cliente:
                 treads = list()
                 c = 0
                 for imagem in imagens_faltantes:
-                    treads.append(Thread(target=self.requisita_imagem, args=(imagem,)))
+                    treads.append(Thread(target=self.requisita_imagem, 
+                                         args=(imagem,)))
                     treads[c].start()
                     c+=1
                 
                 for tread in treads:
                     tread.join()
             except Exception as e:
-                log.error("erro na criação das threads para pegar as imagens")
+                log.error("erro na criação das threads para "
+                          "pegar as imagens")
                 log.error(e)
         else:
-            tread = Thread(target=self.requisita_imagem, args=(imagens_faltantes,))
+            tread = Thread(target=self.requisita_imagem, 
+                           args=(imagens_faltantes,))
             tread.start()
             tread.join()
+
+    # TODO: na integração adicionar id como parametro
+    def compra_produto(self):
+        id = 1
+        req = { "tipo_pedido" : "compra_produto", "id" : id }
+        data = self.request(req)
+        return data
+
+
+# -------------- FUNÇÕES AUXILIARES -------------------------------------------
 
 def busca_nome_imagem(data):
     return data["resultado"][0][3]

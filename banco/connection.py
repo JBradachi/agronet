@@ -12,6 +12,7 @@ class ConnectionHandler:
             "padrao" : self.handle_padrao,
             "insere_produto" : self.handle_insere_produto,
             "requisita_imagem" : self.handle_requisita_imagem,
+            "compra_produto" : self.handle_compra_produto,
         }
 
         try:
@@ -142,5 +143,31 @@ class ConnectionHandler:
             log.error(e)
             
         self.conn.send_dict(resposta)
+
+    def handle_compra_produto(self, msg):
+        id = msg["id"]
+        
+        # verifica se tem estoque
+        verificacao = { 
+            "consulta" : "SELECT quantidade FROM Maquina WHERE id = ?",
+            "parametros" : (id,) }
+        
+        resposta = self.exec_query(verificacao)
+        quantidade = resposta["resultado"][0]
+
+        if quantidade > 0:
+            
+            # compra bem sucedida, atualiza banco e retorna ok
+
+            # TODO atualizar banco
+
+            self.conn.send_dict({ "status" : 0, 
+                                 "mensagem" : "compra bem sucedida"})
+            return 
+        
+        # sem estoque
+        self.conn.send_dict({ "status" : -1, 
+                            "mensagem" : "compra mal sucedida, sem estoque"})
+        return
     
     

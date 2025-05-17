@@ -26,6 +26,7 @@ class ConnectionHandler:
             "todos_produtos" : self.handle_todos_produtos,
             "requisita_loja" : self.handle_requisita_loja,
             "requisita_imagem" : self.handle_requisita_imagem,
+            "compra_produto" : self.handle_compra_produto,
         }
 
         try:
@@ -295,6 +296,18 @@ class ConnectionHandler:
         resposta = self.conn_db.recv_dict()
         
         self.conn.send_dict(resposta)
+        return
+    
+    def handle_compra_produto(self, dados):
+        id = dados["id"]
+
+        mensagem = { "tipo_consulta" : "compra_produto", 
+                    "id" : id }
+
+        self.conn_db.send_dict(mensagem)
+        resposta = self.conn_db.recv_dict()
+
+        self.conn.send_dict(resposta) 
         return
 
 # ------------------------------------------------------------------------------
