@@ -90,6 +90,9 @@ class Cliente:
         id = 1
         data = { "tipo_pedido" : "requisita_produto", "id" : id }
         data = self.request(data)
+        
+        # TODO: fazer verificação se já possúi a imagem no banco
+        
         try:
             nome_imagem = busca_nome_imagem(data)
             imagem = data['imagem_conteudo']
@@ -114,7 +117,9 @@ class Cliente:
             imagens_faltantes = get_imagens_faltantes(produtos)
 
             # requisita as imagens que não está em static em outras threads
-
+            # for imagem in imagens_faltantes:
+            #   tread = Thread(target=self.requisita_imagem, args=(imagem,))
+            #   tread.start()
             
 
         except Exception as e:
@@ -125,6 +130,12 @@ class Cliente:
 
     # thread chama isso que coloca em static uma imagem
     def requisita_imagem(nome_imagem):
+        # inicia uma nova conexão com o servidor
+        # acho que se aproveitar o mesmo socket pode dar pau
+
+        # servidor devolve binário da imagem
+        
+        # constrói imagem na pasta static
         pass
 
 def busca_nome_imagem(data):
