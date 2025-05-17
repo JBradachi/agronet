@@ -8,6 +8,7 @@ import logging as log
 
 from protocolo.protocolo import JsonTSocket
 from protocolo.entidades import Loja, Usuario, Maquina
+from threading import Thread
 
 HOST = "127.0.0.1"
 PORT = 6000
@@ -107,13 +108,40 @@ class Cliente:
     def requisita_todos_produtos(self):
         try:
             data = { "tipo_pedido" : "todos_produtos" }
-            data = self.request(data)
+            produtos = self.request(data)
+
+            # verifica as imagens que tem não tem no cliente
+            imagens_faltantes = get_imagens_faltantes(produtos)
+
+            # requisita as imagens que não está em static em outras threads
+
+            
+
         except Exception as e:
             log.error("erro em requisita todos os produtos ")
             log.error(e)
         
         return data
 
+    # thread chama isso que coloca em static uma imagem
+    def requisita_imagem(nome_imagem):
+        pass
+
 def busca_nome_imagem(data):
-    log.info(f"data {data}")
     return data["resultado"][0][3]
+
+def get_imagens_dict(data):
+    nomes_imagens = list()
+    produtos = data["resultado"]
+    for produto in produtos:
+        nomes_imagens.append(produto[3])
+    return nomes_imagens
+
+def get_imagens_faltantes(data):
+    imagens_cliente = os.listdir("static")
+    imagens_banco = get_imagens_dict(data)
+    imagens_faltantes = list()
+    for imagem in imagens_banco:
+        if imagem not in imagens_cliente:
+            imagens_faltantes.append(imagem)
+    return imagens_faltantes

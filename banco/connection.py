@@ -64,10 +64,8 @@ class ConnectionHandler:
     def exec_query(self, msg):
         consulta = msg["consulta"]
         params = msg["parametros"]
-        log.info(f"consulta {consulta}")
         try:
             res = self.cursor.execute(consulta, params).fetchall()
-            log.info(" executa a query")
             return {
                 "status" : 0,
                 "resultado" : res
@@ -75,7 +73,7 @@ class ConnectionHandler:
         except sqlite3.IntegrityError as ex:
             # Esse erro ocorre principalmente quando a chave primária do item
             # enviado colide com uma chave primária pré-existente
-            log.info(ex)
+            log.error(ex)
             return {
                 "status" : 1,
                 "erro" : "integridade"

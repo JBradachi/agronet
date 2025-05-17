@@ -259,7 +259,6 @@ class ConnectionHandler:
             exit(4)
 
         resposta = self.conn_db.recv_dict()
-        log.info(f"o que chega no servidor: {resposta}")
         self.conn.send_dict(resposta)
         return
 
