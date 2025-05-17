@@ -25,6 +25,7 @@ class ConnectionHandler:
             "requisita_produto" : self.handle_requisita_produto,
             "todos_produtos" : self.handle_todos_produtos,
             "requisita_loja" : self.handle_requisita_loja,
+            "requisita_imagem" : self.handle_requisita_imagem,
         }
 
         try:
@@ -248,7 +249,7 @@ class ConnectionHandler:
     def handle_requisita_produto(self, dados):
         id_maquina = dados["id"]
         params = [id_maquina,]
-        mensagem = envelope.req_produto_completo(
+        mensagem = envelope.consulta(
             "SELECT * FROM Maquina "
             "WHERE id = ?", params)
         try:
@@ -280,6 +281,19 @@ class ConnectionHandler:
         self.conn_db.send_dict(msg)
         resposta = self.conn_db.recv_dict()
         self.conn.send_dict(resposta)
+        return 
+    
+    def handle_requisita_imagem(self, dados):
+        nome_imagem = dados["imagem"]
+
+        mensagem = { "tipo_consulta" : "requisita_imagem",
+                    "imagem" : nome_imagem }
+        
+        self.conn_db.send_dict(mensagem)
+        resposta = self.conn_db.recv_dict()
+        
+        self.conn.send_dict(resposta)
+        return
 
 # ------------------------------------------------------------------------------
 

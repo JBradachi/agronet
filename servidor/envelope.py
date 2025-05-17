@@ -14,19 +14,6 @@ def insere_produto(sql, params, base64_img, nome_imagem):
         "imagem" : nome_imagem
     }
 
-def req_produto_completo(sql, params):
-    return {
-        "tipo_consulta" : "req_produto_completo",
-        "consulta" : sql,
-        "parametros" : params
-    }
-
-def consulta_simples(sql):
-    return {
-        "tipo_consulta" : "padrao",
-        "consulta" : sql,
-    }
-
 def resposta_login(token):
     # token pode ser
     # - uma URL segura de 32 caracteres se sucesso no login

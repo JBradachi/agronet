@@ -11,7 +11,7 @@ class ConnectionHandler:
         self.handlers = {
             "padrao" : self.handle_padrao,
             "insere_produto" : self.handle_insere_produto,
-            "req_produto_completo" : self.handle_req_produto_completo
+            "requisita_imagem" : self.handle_requisita_imagem,
         }
 
         try:
@@ -128,41 +128,19 @@ class ConnectionHandler:
             msg["parametros"][0] = nome_novo
 
         return msg
-    
-    def handle_req_produto_completo(self, msg):
 
-        # pega o nome no banco
+    def handle_requisita_imagem(self, msg):
+        nome_imagem = msg["imagem"]
+        resposta = { "status" : 0, }
+
         try:
-            resp = self.exec_query(msg)
-            nome_imagem = self.nome_imagem(msg)
-
-            if resp["status"] != 0:
-                self.conn.send_dict(resp)
-                return
-            
-            try:
-                with open(f"static/{nome_imagem}", 'rb') as f:
-                    img_b64 = base64.b64encode(f.read()).decode('utf-8')
-                    resp["imagem_conteudo"] = img_b64
-            except Exception as e:
-                log.error("erro na abertura do arquivo no envio")
-                log.error(e)
-            
-            self.conn.send_dict(resp)
+            with open(f"static/{nome_imagem}", 'rb') as f:
+                img_b64 = base64.b64encode(f.read()).decode('utf-8')
+                resposta["imagem_conteudo"] = img_b64
         except Exception as e:
-            log.error("erro no handle_req_produto_completo")
+            log.error("erro na abertura do arquivo no envio")
             log.error(e)
-        
-    def nome_imagem(self, msg):
-        try:
-            id_produto = msg["parametros"][0]
-            consulta = { "consulta" : "SELECT imagem FROM Maquina WHERE id = ?",
-                        "parametros" : (id_produto,)}
-            resposta = self.exec_query(consulta)
-            return resposta["resultado"][0][0]
-        except Exception as e:
-            log.error("erro ao buscar o nome da imagem no banco")
-            log.error(e)
-
+            
+        self.conn.send_dict(resposta)
     
     
