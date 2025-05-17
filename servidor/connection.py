@@ -284,30 +284,28 @@ class ConnectionHandler:
         self.conn_db.send_dict(msg)
         resposta = self.conn_db.recv_dict()
         self.conn.send_dict(resposta)
-        return 
-    
+        return
+
     def handle_requisita_imagem(self, dados):
         nome_imagem = dados["imagem"]
 
         mensagem = { "tipo_consulta" : "requisita_imagem",
                     "imagem" : nome_imagem }
-        
+
         self.conn_db.send_dict(mensagem)
         resposta = self.conn_db.recv_dict()
-        
+
         self.conn.send_dict(resposta)
         return
-    
+
     def handle_compra_produto(self, dados):
         id = dados["id"]
 
-        mensagem = { "tipo_consulta" : "compra_produto", 
-                    "id" : id }
-
+        mensagem = { "tipo_consulta" : "compra_produto", "id" : id }
         self.conn_db.send_dict(mensagem)
         resposta = self.conn_db.recv_dict()
 
-        self.conn.send_dict(resposta) 
+        self.conn.send_dict(resposta)
         return
 
 # ------------------------------------------------------------------------------

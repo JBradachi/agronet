@@ -97,7 +97,7 @@ class ConnectionHandler:
             log.error(e)
 
         resp = self.exec_query(msg)
-        
+
         if resp["status"] != 0:
             self.conn.send_dict(resp)
             return
@@ -117,7 +117,7 @@ class ConnectionHandler:
     def safe_name(self, msg):
         # tenta encontrar um nome que não de problemas
         while True:
-            verificacao = { "consulta" : "SELECT imagem FROM Maquina " 
+            verificacao = { "consulta" : "SELECT imagem FROM Maquina "
                            "WHERE imagem = ?", "parametros": (msg['imagem'],)}
             existe = self.exec_query(verificacao)
             if not existe["resultado"]:
@@ -141,33 +141,32 @@ class ConnectionHandler:
         except Exception as e:
             log.error("erro na abertura do arquivo no envio")
             log.error(e)
-            
+
         self.conn.send_dict(resposta)
 
     def handle_compra_produto(self, msg):
         id = msg["id"]
-        
         # verifica se tem estoque
-        verificacao = { 
+        verificacao = {
             "consulta" : "SELECT quantidade FROM Maquina WHERE id = ?",
             "parametros" : (id,) }
-        
         resposta = self.exec_query(verificacao)
         quantidade = resposta["resultado"][0]
 
         if quantidade > 0:
-            
             # compra bem sucedida, atualiza banco e retorna ok
-
-            # TODO atualizar banco
-
-            self.conn.send_dict({ "status" : 0, 
+            atualiza = {
+                "consulta" : "UPDATE Maquina "
+                "SET quantidade = quantidade - 1 "
+                "WHERE id = ?",
+                "parametros" : (id,)
+            }
+            self.exec_query(atualiza)
+            self.conn.send_dict({ "status" : 0,
                                  "mensagem" : "compra bem sucedida"})
-            return 
-        
         # sem estoque
-        self.conn.send_dict({ "status" : -1, 
+        self.conn.send_dict({ "status" : -1,
                             "mensagem" : "compra mal sucedida, sem estoque"})
         return
-    
-    
+
+

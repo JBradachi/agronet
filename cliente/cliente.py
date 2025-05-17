@@ -93,15 +93,15 @@ class Cliente:
         id = 1
         data = { "tipo_pedido" : "requisita_produto", "id" : id }
         data = self.request(data)
-        
+
         nome_imagem = busca_nome_imagem(data)
         if nome_imagem not in os.listdir("static"):
             self.baixa_imagens(nome_imagem)
 
         log.info("produto recebido com sucesso")
-        
+
         return data["resultado"]
-    
+
     # retorna todas as máquinas (id, loja, nome_imagem, modelo, visibilidade?)
     # se estiverem visíveis mostra.
     def requisita_todos_produtos(self):
@@ -146,24 +146,24 @@ class Cliente:
             log.error("Erro na conexão da thread cliente com o server")
             log.error(e)
 
-        data = { "tipo_pedido" : "requisita_imagem", 
+        data = { "tipo_pedido" : "requisita_imagem",
                 "imagem" : nome_imagem}
 
         socket.send_dict(data)
 
         # servidor devolve binário da imagem
         resposta = socket.recv_dict()
-        
+
         # constrói imagem na pasta static
         imagem_conteudo = resposta["imagem_conteudo"]
         constroi_imagem(nome_imagem, imagem_conteudo)
 
         return
-    
+
     def baixa_imagens(self, imagens_faltantes):
         """Busca imagens do servidor e baixa elas no cliente.
         não continua até todas as imagens estarem baixadas"""
-    
+
         log.info(f"baixando imagens... {imagens_faltantes}")
         # requisita as imagens que não está em static em outras threads
         if isinstance(imagens_faltantes, list):
@@ -171,11 +171,11 @@ class Cliente:
                 treads = list()
                 c = 0
                 for imagem in imagens_faltantes:
-                    treads.append(Thread(target=self.requisita_imagem, 
+                    treads.append(Thread(target=self.requisita_imagem,
                                          args=(imagem,)))
                     treads[c].start()
                     c+=1
-                
+
                 for tread in treads:
                     tread.join()
             except Exception as e:
@@ -183,14 +183,12 @@ class Cliente:
                           "pegar as imagens")
                 log.error(e)
         else:
-            tread = Thread(target=self.requisita_imagem, 
+            tread = Thread(target=self.requisita_imagem,
                            args=(imagens_faltantes,))
             tread.start()
             tread.join()
 
-    # TODO: na integração adicionar id como parametro
-    def compra_produto(self):
-        id = 1
+    def compra_produto(self, id):
         req = { "tipo_pedido" : "compra_produto", "id" : id }
         data = self.request(req)
         return data
