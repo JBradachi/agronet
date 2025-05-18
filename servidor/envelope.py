@@ -14,12 +14,12 @@ def insere_produto(sql, params, base64_img, nome_imagem):
         "imagem" : nome_imagem
     }
 
-def resposta_login(token):
+def resposta_login(token, loja):
     # token pode ser
     # - uma URL segura de 32 caracteres se sucesso no login
     # - valor false se falhou no login
     if token:
-        resposta = { "token" : token , "status" : 0}
+        resposta = { "token" : token , "status" : 0, "loja": loja}
         return resposta
     else:
         resposta = { "status" : -1 , "erro" : "Falha no login" }

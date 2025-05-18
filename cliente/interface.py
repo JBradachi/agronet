@@ -8,6 +8,7 @@ from cliente import Cliente
 from telas.login import TelaLogin
 from telas.cadastro import TelaCadastro
 from telas.mainScreen import TelaMainScreen
+from telas.createShop import TelaCreateShop
 
 class Interface(QWidget):
     def __init__(self):
@@ -82,10 +83,12 @@ def main():
     tela_login = TelaLogin(stack, cliente)
     tela_cadastro = TelaCadastro(stack, cliente)
     tela_main = TelaMainScreen(stack, cliente)
+    tela_create_shop = TelaCreateShop(stack, cliente)
 
     stack.addWidget(tela_login)     # index 0
     stack.addWidget(tela_cadastro)  # index 1
     stack.addWidget(tela_main)      # index 2
+    stack.addWidget(tela_create_shop)  # index 3 por exemplo
     
     stack.setWindowTitle("Cliente Distribuído")
 

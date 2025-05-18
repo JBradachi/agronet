@@ -61,7 +61,7 @@ INSERT INTO Loja (nome, dia_criacao, mes_criacao, ano_criacao,
   ('adminStore', 12, 2, 2004,
     'Fernandópolis', 'SP', 'Loja de colheitadeiras de café'),
   ('Celeiro', 21, 7, 1994,
-    'Florestal', 'MG', 'Loja de tratores');
+    'Florestal', 'MG', 'Loja de tratores'),
   ('Damasco', 21, 7, 1500,
     'Florestal', 'MG', 'Loja de plantadeiras');
 

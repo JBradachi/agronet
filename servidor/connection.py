@@ -110,7 +110,7 @@ class ConnectionHandler:
 
                 self.user = nome
                 self.token = secrets.token_urlsafe(16)
-                resposta = envelope.resposta_login(self.token)
+                resposta = envelope.resposta_login(self.token, None)
             else:
                 resposta = envelope.resposta_login(False)
 
@@ -140,7 +140,7 @@ class ConnectionHandler:
                 self.token = secrets.token_urlsafe(16)
                 self.user = nome
                 self.loja = resposta_db["resultado"][0]
-                resposta = envelope.resposta_login(self.token)
+                resposta = envelope.resposta_login(self.token, self.loja)
 
             self.conn.send_dict(resposta)
 

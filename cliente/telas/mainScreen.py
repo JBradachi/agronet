@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QScrollArea,
-    QPushButton, QLabel, QFrame
+    QPushButton, QLabel, QFrame, QSizePolicy, QMessageBox
 )
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPixmap
@@ -14,7 +14,7 @@ class ProdutoCard(QWidget):
         layout.setSpacing(4)
 
         imagem = QLabel()
-        pixmap = QPixmap(imagem_path).scaled(120, 120, Qt.AspectRatioMode.KeepAspectRatio)
+        pixmap = QPixmap(imagem_path).scaled(300, 300, Qt.AspectRatioMode.KeepAspectRatio)
         imagem.setPixmap(pixmap)
         imagem.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
@@ -34,7 +34,7 @@ class ProdutoCard(QWidget):
         layout.addWidget(label_nome_e_preco_widget)
         self.setLayout(layout)
 
-        self.setFixedSize(500, 200)
+        self.setFixedSize(500, 350)
 
         self.setStyleSheet("background-color: white; border: 1px solid #ccc; border-radius: 6px;")
 
@@ -53,10 +53,10 @@ class LojaWidget(QFrame):
         layout.addWidget(titulo)
 
         carrossel_scroll = QScrollArea()
-        carrossel_scroll.setWidgetResizable(True)
-        carrossel_scroll.setFixedHeight(300)
+        carrossel_scroll.setFixedHeight(400)  # ou 330
+
         carrossel_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
-        carrossel_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        
 
         container = QWidget()
         carrossel_layout = QHBoxLayout()
@@ -72,7 +72,6 @@ class LojaWidget(QFrame):
         layout.addWidget(carrossel_scroll)
 
         self.setLayout(layout)
-        self.setFrameShape(QFrame.Shape.StyledPanel)
         self.setStyleSheet("margin: 10px; padding: 10px; background-color: #f0f0f0; border-radius: 8px")
 
 
@@ -81,60 +80,76 @@ class TelaMainScreen(QWidget):  # <- Substitui QMainWindow por QWidget
         super().__init__()
         self.stack = stack
         self.cliente = cliente
+        print(cliente.requisita_todos_produtos())
         self.init_ui()
+
+    def verifica_loja(self):
+        nome_loja = self.cliente.usuario_logado["loja"]
+        resposta = self.cliente.requisita_loja(nome_loja)
+
+        if resposta.get("status") == 0:
+            QMessageBox.information(self, "Minha Loja", f"A loja '{nome_loja}' já existe.")
+            # self.stack.setCurrentIndex(?)  # redireciona para tela da loja
+        else:
+            self.stack.setCurrentIndex(3)  # redireciona para TelaCreateShop
+
 
     def init_ui(self):
         main_layout = QVBoxLayout()
+        
 
         # Header
         header = QHBoxLayout()
         btn_inicio = QPushButton("Início")
         btn_loja = QPushButton("Minha Loja")
+        btn_loja.clicked.connect(self.verifica_loja)
+
         header.addWidget(btn_inicio)
         header.addStretch()
+        
         header.addWidget(btn_loja)
 
-        main_layout.addLayout(header)
+        header_widget = QWidget()
+        header_widget.setFixedHeight(50)
+        header_widget.setLayout(header)
+        main_layout.addWidget(header_widget)
 
         # Scroll Area for Lojas
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
-        scroll_container = QWidget()
-        lojas_layout = QVBoxLayout()
 
-        # Exemplo de dados
-        lojas = [
-            {
-                'nome': 'Loja A',
-                'produtos': [
-                    {'nome': 'Produto 1', 'preco': 10.0, 'imagem': 'static/exemplo.png'},
-                    {'nome': 'Produto 2', 'preco': 20.0, 'imagem': 'static/exemplo.png'},
-                ]
-            },
-            {
-                'nome': 'Loja B',
-                'produtos': [
-                    {'nome': 'Produto 3', 'preco': 30.0, 'imagem': 'static/exemplo.png'},
-                ]
-            },
-            {
-                'nome': 'Loja B',
-                'produtos': [
-                    {'nome': 'Produto 3', 'preco': 30.0, 'imagem': 'static/exemplo.png'},
-                ]
-            },
-            {
-                'nome': 'Loja B',
-                'produtos': [
-                    {'nome': 'Produto 3', 'preco': 30.0, 'imagem': 'static/exemplo.png'},
-                ]
-            }
-        ]
+        scroll_container = QWidget()
+        scroll_container.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+
+        lojas_layout = QVBoxLayout()
         
 
-        for loja in lojas:
-            loja_widget = LojaWidget(loja['nome'], loja['produtos'], self.abrir_pagina_produto)
+        # Exemplo de dados
+        resposta = self.cliente.requisita_todos_produtos()
+        produtos_brutos = resposta.get("resultado", [])
+        print(produtos_brutos)
+
+        lojas_dict = {}
+        
+        for produto in produtos_brutos:
+            id, loja_nome, modelo, nome_imagem, preco, quantidade = produto
+
+            produto_info = {
+                'nome': modelo,
+                'preco': preco,
+                'imagem': f'static/{nome_imagem}'
+            }
+
+            if loja_nome not in lojas_dict:
+                lojas_dict[loja_nome] = []
+
+            lojas_dict[loja_nome].append(produto_info)
+
+        for loja_nome, produtos in lojas_dict.items():
+            loja_widget = LojaWidget(loja_nome, produtos, self.abrir_pagina_produto)
             lojas_layout.addWidget(loja_widget)
+
+        lojas_layout.addStretch()
 
         scroll_container.setLayout(lojas_layout)
         scroll_area.setWidget(scroll_container)

@@ -56,10 +56,12 @@ class TelaLogin(QWidget):
             QMessageBox.information(self, "Resposta", str(resposta))
         else:
             QMessageBox.warning(self, "Erro", "Preencha todos os campos.")
+            return
 
         if resposta.get("status") == 0:
-            self.stack.setCurrentIndex(2)  # Vai para TelaMainScreen
+            self.stack.setCurrentIndex(2)
             self.stack.resize(1080,720)
+            
 
 
     def ir_para_cadastro(self):

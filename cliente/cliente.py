@@ -39,7 +39,18 @@ class Cliente:
         usuario = Usuario(nome, senha)
         data = usuario.dict()
         data["tipo_pedido"] = "login"
-        return self.request(data)
+        resposta = self.request(data)
+
+        if resposta.get("status") == 0:
+            self.usuario_logado = {
+                "nome": nome,
+                "loja": resposta.get("loja"),
+                "token": resposta.get("token")  # opcional, se for usar
+            }
+        else:
+            self.usuario_logado = None
+
+        return resposta
 
     def cadastra_usuario(self, nome, senha):
         usuario = Usuario(nome, senha)
