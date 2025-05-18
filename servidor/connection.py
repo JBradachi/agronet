@@ -139,7 +139,7 @@ class ConnectionHandler:
                 # Autentica o usuário nessa conexão
                 self.token = secrets.token_urlsafe(16)
                 self.user = nome
-                self.loja = resposta_db["resultado"][0]
+                self.loja = resposta_db["resultado"][0][0]
                 resposta = envelope.resposta_login(self.token, self.loja)
 
             self.conn.send_dict(resposta)
@@ -152,19 +152,23 @@ class ConnectionHandler:
     def handle_edita_produto(self, dados):
         id_maquina = dados["id"]
         visivel = 1 if dados["visivel"] else 0
-        mensagem = envelope.consulta(
-                "UPDATE Maquina "
-                "SET visivel = ? "
-                "WHERE id = ?", (id_maquina, visivel))
+        mensagem = envelope.consulta("UPDATE Maquina SET visivel = ? WHERE id = ?", (id_maquina, visivel))
+        log.info(f'A MENSAGEM: {mensagem}')
         try:
-            self.conn_db.send_dict(mensagem)
-            # Não acho que a resposta do banco interessa muito nesse caso,
-            # então simplesmente não faço nada com ela
-            self.conn_db.recv_dict()
+            log.info(f'A MENSAGEM: {mensagem}')
+            resposta_db = self.conn_db.send_dict(mensagem)
+            
+            log.info(f"{resposta_db}")
+            
+            if resposta_db.get("status") != 0:
+                self.conn.send_dict({"status": -1, "erro": "Erro ao atualizar visibilidade"})
+            else:
+                self.conn.send_dict(envelope.ok_resp())
 
-            self.conn.send_dict(envelope.ok_resp())
-
-        except: db_error()
+        except Exception as e:
+            log.error("Erro ao editar produto")
+            log.error(e)
+            self.conn.send_dict({"status": -1, "erro": "Exceção no servidor"})
 
     # { "tipo_pedido" : "cadastra_loja", dados_loja... }
     def handle_cadastra_loja(self, dados):
@@ -280,7 +284,7 @@ class ConnectionHandler:
     def handle_requisita_loja(self, dados):
         nome = dados["nome"]
         msg = envelope.consulta(
-                "SELECT * FROM Loja WHERE nome  = ?", (nome))
+                "SELECT * FROM Loja WHERE nome  = ?", (nome,))
         self.conn_db.send_dict(msg)
         resposta = self.conn_db.recv_dict()
         self.conn.send_dict(resposta)

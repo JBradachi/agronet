@@ -67,10 +67,11 @@ class Cliente:
         return self.request(req)
 
     def edita_produto(self, id, visivel):
+        log.info(f"MUDANÇA DE VISIBILIDADE ID: {id} VISIB: {visivel}")
         return self.request({
             "tipo_pedido" : "edita_produto",
             "id" : id,
-            "visivel" : bool(visivel),
+            "visivel" : visivel,
         })
 
     # TODO: na integração add os parametros
@@ -100,10 +101,11 @@ class Cliente:
     # a partir de um id de máquina, retorna todas as info delas
     # em um dicionário
     # TODO: na integração adicionar id como parametro
-    def requisita_produto_completo(self):
-        id = 1
+    def requisita_produto_completo(self, id):
         data = { "tipo_pedido" : "requisita_produto", "id" : id }
         data = self.request(data)
+        log.info(f'{data}')
+        log.info(f'ID: {id}')
 
         nome_imagem = busca_nome_imagem(data)
         if nome_imagem not in os.listdir("static"):

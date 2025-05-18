@@ -64,6 +64,8 @@ class LojaWidget(QFrame):
         carrossel_layout.setSpacing(10)
 
         for produto in produtos:
+            if produto['visibilidade'] == 0:
+                continue
             card = ProdutoCard(produto['nome'], produto['preco'], produto['imagem'], on_produto_click)
             carrossel_layout.addWidget(card)
 
@@ -80,16 +82,14 @@ class TelaMainScreen(QWidget):  # <- Substitui QMainWindow por QWidget
         super().__init__()
         self.stack = stack
         self.cliente = cliente
-        print(cliente.requisita_todos_produtos())
         self.init_ui()
 
     def verifica_loja(self):
-        nome_loja = self.cliente.usuario_logado["loja"]
-        resposta = self.cliente.requisita_loja(nome_loja)
+        loja = self.cliente.usuario_logado.get("loja")
 
-        if resposta.get("status") == 0:
-            QMessageBox.information(self, "Minha Loja", f"A loja '{nome_loja}' já existe.")
-            # self.stack.setCurrentIndex(?)  # redireciona para tela da loja
+        if loja:
+            self.stack.widget(4).carregar_dados()
+            self.stack.setCurrentIndex(4)
         else:
             self.stack.setCurrentIndex(3)  # redireciona para TelaCreateShop
 
@@ -127,17 +127,17 @@ class TelaMainScreen(QWidget):  # <- Substitui QMainWindow por QWidget
         # Exemplo de dados
         resposta = self.cliente.requisita_todos_produtos()
         produtos_brutos = resposta.get("resultado", [])
-        print(produtos_brutos)
 
         lojas_dict = {}
         
         for produto in produtos_brutos:
-            id, loja_nome, modelo, nome_imagem, preco, quantidade = produto
+            id, loja_nome, modelo, nome_imagem, preco, visibilidade = produto
 
             produto_info = {
                 'nome': modelo,
                 'preco': preco,
-                'imagem': f'static/{nome_imagem}'
+                'imagem': f'static/{nome_imagem}',
+                'visibilidade': visibilidade
             }
 
             if loja_nome not in lojas_dict:
