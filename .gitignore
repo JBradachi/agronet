@@ -9,7 +9,6 @@ env/
 /cliente/__pycache__/
 /cliente/static/
 /banco/__pycache__/
-/banco/static/
 /protocolo/__pycache__/
 .dockerignore
 *.tar
