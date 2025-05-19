@@ -164,6 +164,7 @@ class ConnectionHandler:
             self.exec_query(atualiza)
             self.conn.send_dict({ "status" : 0,
                                  "mensagem" : "compra bem sucedida"})
+            return
         # sem estoque
         self.conn.send_dict({ "status" : -1,
                             "mensagem" : "compra mal sucedida, sem estoque"})

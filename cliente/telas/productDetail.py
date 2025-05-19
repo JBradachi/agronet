@@ -67,4 +67,5 @@ class TelaDetalheProduto(QWidget):
     def comprar(self):
         resposta = self.cliente.compra_produto(self.id_produto)
         QMessageBox.information(self, "Compra", str(resposta))
+        self.stack.widget(2).carregar_dados()
         self.stack.setCurrentIndex(2)

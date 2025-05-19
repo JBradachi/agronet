@@ -106,26 +106,27 @@ class Cliente:
 
         log.info("produto recebido com sucesso")
 
+        log.info(f"RESULTADOOOO: {data['resultado']}")
+
         return data["resultado"]
 
     # retorna todas as máquinas (id, loja, nome_imagem, modelo, visibilidade?)
     # se estiverem visíveis mostra.
     def requisita_todos_produtos(self):
-        try:
-            data = { "tipo_pedido" : "todos_produtos" }
-            produtos = self.request(data)
+        data = { "tipo_pedido" : "todos_produtos" }
+        produtos = self.request(data)
 
-            # verifica as imagens que tem não tem no cliente
-            imagens_faltantes = get_imagens_faltantes(produtos)
+        log.info(f"[DEBUG] resposta bruta: {produtos}")
 
-            if imagens_faltantes:
-                self.baixa_imagens(imagens_faltantes)
+        if not produtos or produtos.get("status") != 0 or "resultado" not in produtos:
+            log.error("requisita_todos_produtos: resposta inválida")
+            return { "status": -1, "resultado": [] }
 
-            log.info("Todas as imagens estão baixadas")
+        imagens_faltantes = get_imagens_faltantes(produtos)
+        if imagens_faltantes:
+            self.baixa_imagens(imagens_faltantes)
 
-        except Exception as e:
-            log.error("erro em requisita todos os produtos ")
-            log.error(e)
+        log.info("Todas as imagens estão baixadas")
         return produtos
 
     # Retorna todas as informações sobre uma loja específica

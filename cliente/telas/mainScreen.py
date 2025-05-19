@@ -1,14 +1,15 @@
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QScrollArea,
-    QPushButton, QLabel, QFrame, QSizePolicy
+    QPushButton, QLabel, QFrame, QGridLayout, QSizePolicy
 )
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPixmap
 
 
 class ProdutoCard(QWidget):
-    def __init__(self, nome, preco, imagem_path, on_click_callback):
+    def __init__(self, product_id, nome, preco, imagem_path, on_click_callback):
         super().__init__()
+
         layout = QVBoxLayout()
         layout.setSpacing(8)
         layout.setContentsMargins(10, 10, 10, 10)
@@ -20,8 +21,20 @@ class ProdutoCard(QWidget):
         layout.addWidget(imagem)
 
         label_nome = QLabel(nome)
+        nomeCut = nome
+        if len(nome) > 25:
+            nomeCut = nome[:24] + "..."
         label_nome.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        label_nome.setStyleSheet("font-weight: bold; font-size: 14px;")
+        label_nome.setStyleSheet("""
+            font-weight: bold;
+            font-size: 12px;
+            padding: 2px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        """)
+        label_nome.setToolTip(nome)  # Mostra o nome completo ao passar o mouse
+        label_nome.setText(nomeCut)
         layout.addWidget(label_nome)
 
         label_preco = QLabel(f"R$ {preco:,.2f}")
@@ -31,10 +44,10 @@ class ProdutoCard(QWidget):
 
         self.setLayout(layout)
         self.setFixedSize(250, 320)
-        self.setStyleSheet("background-color: #fff; border: 1px solid #ccc; border-radius: 8px;")
+        self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        self.setStyleSheet("background-color: #fff; border: 1px solid #ccc; border-radius: 8px; ")
 
-        self.mousePressEvent = lambda event: on_click_callback(nome)
-
+        self.mousePressEvent = lambda event: on_click_callback(product_id)
 
 class LojaWidget(QFrame):
     def __init__(self, nome_loja, produtos, on_produto_click):
@@ -47,31 +60,38 @@ class LojaWidget(QFrame):
         titulo.setStyleSheet("font-size: 18px; font-weight: bold;")
         layout.addWidget(titulo)
 
-        carrossel_scroll = QScrollArea()
-        carrossel_scroll.setFixedHeight(360)
-        carrossel_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
-        carrossel_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        carrossel_scroll.setWidgetResizable(True)
+        grid_container = QWidget()
+        grid_layout = QGridLayout()
+        grid_layout.setSpacing(15)
+        grid_layout.setContentsMargins(10, 0, 10, 0)
 
-        container = QWidget()
-        carrossel_layout = QHBoxLayout()
-        carrossel_layout.setContentsMargins(10, 0, 10, 0)
-        carrossel_layout.setSpacing(15)
-
+        row = 0
+        col = 0
         for produto in produtos:
             if produto["visibilidade"] == 0:
                 continue
-            card = ProdutoCard(produto["nome"], produto["preco"], produto["imagem"], on_produto_click)
-            carrossel_layout.addWidget(card)
 
-        carrossel_layout.addStretch()
-        container.setLayout(carrossel_layout)
+            card = ProdutoCard(
+                produto["id"],
+                produto["nome"],
+                produto["preco"],
+                produto["imagem"],
+                on_produto_click
+            )
 
-        carrossel_scroll.setWidget(container)
-        layout.addWidget(carrossel_scroll)
+            grid_layout.addWidget(card, row, col)
+
+            col += 1
+            if col >= 3:
+                col = 0
+                row += 1
+
+        grid_container.setLayout(grid_layout)
+        layout.addWidget(grid_container)
 
         self.setLayout(layout)
         self.setStyleSheet("background-color: #f8f8f8; border-radius: 10px; margin-bottom: 16px;")
+
 
 
 class TelaMainScreen(QWidget):
@@ -129,6 +149,7 @@ class TelaMainScreen(QWidget):
             id, loja_nome, modelo, nome_imagem, preco, visibilidade = produto
 
             info = {
+                "id": id,
                 "nome": modelo,
                 "preco": preco,
                 "imagem": f"static/{nome_imagem}",
@@ -151,14 +172,8 @@ class TelaMainScreen(QWidget):
         else:
             self.stack.setCurrentIndex(3)
 
-    def abrir_pagina_produto(self, nome_produto):
+    def abrir_pagina_produto(self, product_id):
         # Busca o ID do produto com esse nome (modelo) da lista atual
-        resposta = self.cliente.requisita_todos_produtos()
-        produtos = resposta.get("resultado", [])
-        for produto in produtos:
-            id, loja, modelo, *_ = produto
-            if modelo == nome_produto:
-                self.stack.widget(7).carregar_produto(id)
-                self.stack.setCurrentIndex(7)
-                break
+        self.stack.widget(7).carregar_produto(product_id)
+        self.stack.setCurrentIndex(7)
 
