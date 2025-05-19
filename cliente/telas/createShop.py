@@ -61,4 +61,5 @@ class TelaCreateShop(QWidget):
         QMessageBox.information(self, "Resultado", str(resposta))
 
     def voltar(self):
+        self.stack.widget(2).carregar_dados()
         self.stack.setCurrentIndex(2)  # Volta para a tela principal

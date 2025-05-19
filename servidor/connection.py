@@ -152,11 +152,15 @@ class ConnectionHandler:
     def handle_edita_produto(self, dados):
         id_maquina = dados["id"]
         visivel = 1 if dados["visivel"] else 0
-        mensagem = envelope.consulta("UPDATE Maquina SET visivel = ? WHERE id = ?", (id_maquina, visivel))
-        log.info(f'A MENSAGEM: {mensagem}')
+        mensagem = envelope.consulta(
+                "UPDATE Maquina "
+                "SET visivel = ? "
+                "WHERE id = ?", (visivel, id_maquina))
+        log.info(f'A MENSAGEM: {str(mensagem)}')
         try:
             log.info(f'A MENSAGEM: {mensagem}')
-            resposta_db = self.conn_db.send_dict(mensagem)
+            self.conn_db.send_dict(mensagem)
+            resposta_db = self.conn_db.recv_dict()
             
             log.info(f"{resposta_db}")
             
@@ -229,16 +233,17 @@ class ConnectionHandler:
         ano_fabricacao = int(dados["ano_fabricacao"])
         nome_imagem = dados["imagem"]
         imagem_conteudo = dados["imagem_conteudo"]
+        quantidade = dados["quantidade"]
         # loja = self.loja ? loja vai estar na conexão já
         loja = dados["loja"]
 
         params = [nome_imagem, loja, modelo, preco,
-                mes_fabricacao, ano_fabricacao]
+                mes_fabricacao, ano_fabricacao, quantidade]
 
         mensagem = envelope.insere_produto(
             "INSERT INTO Maquina "
-            "(imagem, loja, modelo, preco, mes_fabricacao, ano_fabricacao) "
-            "VALUES (?, ?, ?, ?, ?, ?)", params, imagem_conteudo, nome_imagem)
+            "(imagem, loja, modelo, preco, mes_fabricacao, ano_fabricacao, quantidade) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?)", params, imagem_conteudo, nome_imagem)
 
         try:
             # tenta inserir os dados

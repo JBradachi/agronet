@@ -42,7 +42,9 @@ class Maquina:
     mes_fabricacao: int
     ano_fabricacao: int
     visivel: bool
+    quantidade: int
     id: int = -1 # desconhecido no momento do cadastro
+    
 
     def dict(self):
         data = asdict(self)

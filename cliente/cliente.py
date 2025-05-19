@@ -71,32 +71,25 @@ class Cliente:
         return self.request({
             "tipo_pedido" : "edita_produto",
             "id" : id,
-            "visivel" : visivel,
+            "visivel" : bool(visivel),
         })
 
     # TODO: na integração add os parametros
     # loja, modelo, preco, mes_fabricacao, ano_fabricacao, nome_imagem
-    def insere_produto(self):
-        loja = "adminStore"
-        modelo = "Challenger MT525D 4WD"
-        preco = 77.8
-        mes_fabricacao = 2
-        ano_fabricacao = 2004
-        nome_imagem = "gato.png"
-        produto = Maquina(loja, modelo, nome_imagem, preco,
-            mes_fabricacao, ano_fabricacao, True)
-
-        # Convertendo para o dicionário adequado
+    def insere_produto(self, loja, modelo, preco, mes_fabricacao, ano_fabricacao, nome_imagem, quantidade):
+        produto = Maquina(loja, modelo, nome_imagem, preco, mes_fabricacao, ano_fabricacao, True, quantidade)
         data = produto.dict()
         data["tipo_pedido"] = "cadastra_produto"
+
         try:
-            with open(f"static/{nome_imagem}", 'rb') as f:
+            with open(f"static/{produto.imagem}", 'rb') as f:
                 img_b64 = base64.b64encode(f.read()).decode('utf-8')
                 data["imagem_conteudo"] = img_b64
             return self.request(data)
         except Exception as e:
             log.error(e)
             log.error("falha em insere_produto")
+
 
     # a partir de um id de máquina, retorna todas as info delas
     # em um dicionário

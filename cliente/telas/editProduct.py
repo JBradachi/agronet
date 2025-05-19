@@ -63,10 +63,11 @@ class TelaEditarProduto(QWidget):
 
             self.produto = {
                 "id": id_produto,
+                "id": dados[0],
                 "modelo": dados[2],
                 "imagem": f"static/{dados[3]}",
                 "preco": dados[4],
-                "visivel": bool(dados[5])
+                "visivel": bool(dados[7])
             }
 
             imagem_path = self.produto["imagem"]
@@ -93,6 +94,7 @@ class TelaEditarProduto(QWidget):
         resposta = self.cliente.edita_produto(self.produto["id"], novo_valor)
 
         QMessageBox.information(self, "Status", str(resposta))
+        self.stack.widget(2).carregar_dados()
         self.stack.widget(4).carregar_dados()
         self.stack.setCurrentIndex(4)
 

@@ -48,6 +48,10 @@ class TelaMinhaLoja(QWidget):
         self.header = self.criar_header()
         self.layout_principal.addWidget(self.header)
 
+        btn_criar_produto = QPushButton("Criar Novo Produto")
+        btn_criar_produto.clicked.connect(lambda: self.stack.setCurrentIndex(6))  # índice da nova tela
+        self.layout_principal.addWidget(btn_criar_produto)
+
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidgetResizable(True)
         self.layout_principal.addWidget(self.scroll_area)
