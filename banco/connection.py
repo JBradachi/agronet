@@ -151,7 +151,7 @@ class ConnectionHandler:
             "consulta" : "SELECT quantidade FROM Maquina WHERE id = ?",
             "parametros" : (id,) }
         resposta = self.exec_query(verificacao)
-        quantidade = resposta["resultado"][0]
+        quantidade = resposta["resultado"][0][0]
 
         if quantidade > 0:
             # compra bem sucedida, atualiza banco e retorna ok
@@ -164,6 +164,7 @@ class ConnectionHandler:
             self.exec_query(atualiza)
             self.conn.send_dict({ "status" : 0,
                                  "mensagem" : "compra bem sucedida"})
+            return
         # sem estoque
         self.conn.send_dict({ "status" : -1,
                             "mensagem" : "compra mal sucedida, sem estoque"})

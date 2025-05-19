@@ -110,7 +110,7 @@ class ConnectionHandler:
 
                 self.user = nome
                 self.token = secrets.token_urlsafe(16)
-                resposta = envelope.resposta_login(self.token)
+                resposta = envelope.resposta_login(self.token, None)
             else:
                 resposta = envelope.resposta_login(False)
 
@@ -139,8 +139,8 @@ class ConnectionHandler:
                 # Autentica o usuário nessa conexão
                 self.token = secrets.token_urlsafe(16)
                 self.user = nome
-                self.loja = resposta_db["resultado"][0]
-                resposta = envelope.resposta_login(self.token)
+                self.loja = resposta_db["resultado"][0][0]
+                resposta = envelope.resposta_login(self.token, self.loja)
 
             self.conn.send_dict(resposta)
 
@@ -155,16 +155,24 @@ class ConnectionHandler:
         mensagem = envelope.consulta(
                 "UPDATE Maquina "
                 "SET visivel = ? "
-                "WHERE id = ?", (id_maquina, visivel))
+                "WHERE id = ?", (visivel, id_maquina))
+        log.info(f'A MENSAGEM: {str(mensagem)}')
         try:
+            log.info(f'A MENSAGEM: {mensagem}')
             self.conn_db.send_dict(mensagem)
-            # Não acho que a resposta do banco interessa muito nesse caso,
-            # então simplesmente não faço nada com ela
-            self.conn_db.recv_dict()
+            resposta_db = self.conn_db.recv_dict()
+            
+            log.info(f"{resposta_db}")
+            
+            if resposta_db.get("status") != 0:
+                self.conn.send_dict({"status": -1, "erro": "Erro ao atualizar visibilidade"})
+            else:
+                self.conn.send_dict(envelope.ok_resp())
 
-            self.conn.send_dict(envelope.ok_resp())
-
-        except: db_error()
+        except Exception as e:
+            log.error("Erro ao editar produto")
+            log.error(e)
+            self.conn.send_dict({"status": -1, "erro": "Exceção no servidor"})
 
     # { "tipo_pedido" : "cadastra_loja", dados_loja... }
     def handle_cadastra_loja(self, dados):
@@ -225,16 +233,17 @@ class ConnectionHandler:
         ano_fabricacao = int(dados["ano_fabricacao"])
         nome_imagem = dados["imagem"]
         imagem_conteudo = dados["imagem_conteudo"]
+        quantidade = dados["quantidade"]
         # loja = self.loja ? loja vai estar na conexão já
         loja = dados["loja"]
 
         params = [nome_imagem, loja, modelo, preco,
-                mes_fabricacao, ano_fabricacao]
+                mes_fabricacao, ano_fabricacao, quantidade]
 
         mensagem = envelope.insere_produto(
             "INSERT INTO Maquina "
-            "(imagem, loja, modelo, preco, mes_fabricacao, ano_fabricacao) "
-            "VALUES (?, ?, ?, ?, ?, ?)", params, imagem_conteudo, nome_imagem)
+            "(imagem, loja, modelo, preco, mes_fabricacao, ano_fabricacao, quantidade) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?)", params, imagem_conteudo, nome_imagem)
 
         try:
             # tenta inserir os dados
@@ -280,7 +289,7 @@ class ConnectionHandler:
     def handle_requisita_loja(self, dados):
         nome = dados["nome"]
         msg = envelope.consulta(
-                "SELECT * FROM Loja WHERE nome  = ?", (nome))
+                "SELECT * FROM Loja WHERE nome  = ?", (nome,))
         self.conn_db.send_dict(msg)
         resposta = self.conn_db.recv_dict()
         self.conn.send_dict(resposta)

@@ -8,49 +8,16 @@ from cliente import Cliente
 from telas.login import TelaLogin
 from telas.cadastro import TelaCadastro
 from telas.mainScreen import TelaMainScreen
+from telas.createShop import TelaCreateShop
+from telas.myShop import TelaMinhaLoja
+from telas.editProduct import TelaEditarProduto
+from telas.createProduct import TelaCriarProduto
+from telas.productDetail import TelaDetalheProduto
+
 
 class Interface(QWidget):
     def __init__(self):
         super().__init__()
-        self.cliente = Cliente()
-
-        self.setWindowTitle("Cliente PyQt")
-        self.setGeometry(100, 100, 300, 150)
-
-        self.layout = QVBoxLayout()
-
-        self.label = QLabel("Digite seu nome:")
-        self.layout.addWidget(self.label)
-
-        self.input_nome = QLineEdit(self)
-        self.layout.addWidget(self.input_nome)
-
-        self.label = QLabel("Digite sua senha:")
-        self.layout.addWidget(self.label)
-
-        self.input_senha = QLineEdit(self)
-        self.layout.addWidget(self.input_senha)
-
-        self.botao = QPushButton("Enviar")
-        self.botao.clicked.connect(self.enviar)
-        self.layout.addWidget(self.botao)
-
-        self.botao2 = QPushButton("testa_envio_produto")
-        self.botao2.clicked.connect(self.envia_produto)
-        self.layout.addWidget(self.botao2)
-
-        self.botao3 = QPushButton("testa_recebimento_produto")
-        self.botao3.clicked.connect(self.abre_produto)
-        self.layout.addWidget(self.botao3)
-
-        self.botao3 = QPushButton("testa_enviar_todos_produtos")
-        self.botao3.clicked.connect(self.homepage)
-        self.layout.addWidget(self.botao3)
-
-        self.resposta_label = QLabel("")
-        self.layout.addWidget(self.resposta_label)
-
-        self.setLayout(self.layout)
 
     def enviar(self):
         nome = self.input_nome.text()
@@ -73,19 +40,26 @@ class Interface(QWidget):
 
 def main():
     app = QApplication(sys.argv)
-    
-    janela = Interface()
-    janela.show()
 
     cliente = Cliente()
     stack = QStackedWidget()
     tela_login = TelaLogin(stack, cliente)
     tela_cadastro = TelaCadastro(stack, cliente)
     tela_main = TelaMainScreen(stack, cliente)
+    tela_create_shop = TelaCreateShop(stack, cliente)
+    tela_minha_loja = TelaMinhaLoja(stack, cliente)
+    tela_editar_produto = TelaEditarProduto(stack, cliente)
+    tela_criar_produto = TelaCriarProduto(stack, cliente)
+    tela_detalhe = TelaDetalheProduto(stack, cliente)
 
     stack.addWidget(tela_login)     # index 0
     stack.addWidget(tela_cadastro)  # index 1
     stack.addWidget(tela_main)      # index 2
+    stack.addWidget(tela_create_shop)  # index 3 por exemplo
+    stack.addWidget(tela_minha_loja)  # index 4
+    stack.addWidget(tela_editar_produto)  # index 5
+    stack.addWidget(tela_criar_produto)  # index 6
+    stack.addWidget(tela_detalhe)  # index 7
     
     stack.setWindowTitle("Cliente Distribuído")
 

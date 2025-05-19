@@ -39,7 +39,18 @@ class Cliente:
         usuario = Usuario(nome, senha)
         data = usuario.dict()
         data["tipo_pedido"] = "login"
-        return self.request(data)
+        resposta = self.request(data)
+
+        if resposta.get("status") == 0:
+            self.usuario_logado = {
+                "nome": nome,
+                "loja": resposta.get("loja"),
+                "token": resposta.get("token")  # opcional, se for usar
+            }
+        else:
+            self.usuario_logado = None
+
+        return resposta
 
     def cadastra_usuario(self, nome, senha):
         usuario = Usuario(nome, senha)
@@ -56,6 +67,7 @@ class Cliente:
         return self.request(req)
 
     def edita_produto(self, id, visivel):
+        log.info(f"MUDANÇA DE VISIBILIDADE ID: {id} VISIB: {visivel}")
         return self.request({
             "tipo_pedido" : "edita_produto",
             "id" : id,
@@ -64,21 +76,13 @@ class Cliente:
 
     # TODO: na integração add os parametros
     # loja, modelo, preco, mes_fabricacao, ano_fabricacao, nome_imagem
-    def insere_produto(self):
-        loja = "adminStore"
-        modelo = "Challenger MT525D 4WD"
-        preco = 77.8
-        mes_fabricacao = 2
-        ano_fabricacao = 2004
-        nome_imagem = "gato.png"
-        produto = Maquina(loja, modelo, nome_imagem, preco,
-            mes_fabricacao, ano_fabricacao, True)
-
-        # Convertendo para o dicionário adequado
+    def insere_produto(self, loja, modelo, preco, mes_fabricacao, ano_fabricacao, nome_imagem, quantidade):
+        produto = Maquina(loja, modelo, nome_imagem, preco, mes_fabricacao, ano_fabricacao, True, quantidade)
         data = produto.dict()
         data["tipo_pedido"] = "cadastra_produto"
+
         try:
-            with open(f"static/{nome_imagem}", 'rb') as f:
+            with open(f"static/{produto.imagem}", 'rb') as f:
                 img_b64 = base64.b64encode(f.read()).decode('utf-8')
                 data["imagem_conteudo"] = img_b64
             return self.request(data)
@@ -86,13 +90,15 @@ class Cliente:
             log.error(e)
             log.error("falha em insere_produto")
 
+
     # a partir de um id de máquina, retorna todas as info delas
     # em um dicionário
     # TODO: na integração adicionar id como parametro
-    def requisita_produto_completo(self):
-        id = 1
+    def requisita_produto_completo(self, id):
         data = { "tipo_pedido" : "requisita_produto", "id" : id }
         data = self.request(data)
+        log.info(f'{data}')
+        log.info(f'ID: {id}')
 
         nome_imagem = busca_nome_imagem(data)
         if nome_imagem not in os.listdir("static"):
@@ -100,26 +106,27 @@ class Cliente:
 
         log.info("produto recebido com sucesso")
 
+        log.info(f"RESULTADOOOO: {data['resultado']}")
+
         return data["resultado"]
 
     # retorna todas as máquinas (id, loja, nome_imagem, modelo, visibilidade?)
     # se estiverem visíveis mostra.
     def requisita_todos_produtos(self):
-        try:
-            data = { "tipo_pedido" : "todos_produtos" }
-            produtos = self.request(data)
+        data = { "tipo_pedido" : "todos_produtos" }
+        produtos = self.request(data)
 
-            # verifica as imagens que tem não tem no cliente
-            imagens_faltantes = get_imagens_faltantes(produtos)
+        log.info(f"[DEBUG] resposta bruta: {produtos}")
 
-            if imagens_faltantes:
-                self.baixa_imagens(imagens_faltantes)
+        if not produtos or produtos.get("status") != 0 or "resultado" not in produtos:
+            log.error("requisita_todos_produtos: resposta inválida")
+            return { "status": -1, "resultado": [] }
 
-            log.info("Todas as imagens estão baixadas")
+        imagens_faltantes = get_imagens_faltantes(produtos)
+        if imagens_faltantes:
+            self.baixa_imagens(imagens_faltantes)
 
-        except Exception as e:
-            log.error("erro em requisita todos os produtos ")
-            log.error(e)
+        log.info("Todas as imagens estão baixadas")
         return produtos
 
     # Retorna todas as informações sobre uma loja específica
