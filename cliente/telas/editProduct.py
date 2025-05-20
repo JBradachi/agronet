@@ -9,7 +9,7 @@ class TelaEditarProduto(QWidget):
         super().__init__()
         self.stack = stack
         self.cliente = cliente
-        self.produto = None  # será preenchido ao abrir a tela
+        self.produto = None
         self.setLayout(QVBoxLayout())
 
         self.label_titulo = QLabel("Editar Produto")
@@ -31,23 +31,6 @@ class TelaEditarProduto(QWidget):
         self.btn_voltar = QPushButton("Voltar")
         self.btn_voltar.clicked.connect(self.voltar)
         self.layout().addWidget(self.btn_voltar)
-
-    # def carregar_produto(self, produto):
-    #     self.produto = produto
-
-    #     modelo = produto['modelo']
-    #     preco = produto['preco']
-    #     imagem_path = produto['imagem']
-    #     visivel = produto['visivel']
-
-    #     if os.path.exists(imagem_path):
-    #         pixmap = QPixmap(imagem_path).scaled(300, 300, Qt.AspectRatioMode.KeepAspectRatio)
-    #         self.imagem.setPixmap(pixmap)
-    #     else:
-    #         self.imagem.setText("Imagem não encontrada")
-
-    #     self.info.setText(f"Modelo: {modelo}\nPreço: R$ {preco:.2f}")
-    #     self.check_visivel.setChecked(visivel)
 
     def carregar_produto(self, id_produto):
         resultado = self.cliente.requisita_produto_completo(id_produto)

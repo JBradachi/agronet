@@ -14,7 +14,6 @@ class TelaCadastro(QWidget):
         layout_externo = QVBoxLayout()
         layout_externo.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        # Widget central encapsulado
         conteudo = QWidget()
         layout_conteudo = QVBoxLayout()
         layout_conteudo.setAlignment(Qt.AlignmentFlag.AlignCenter)

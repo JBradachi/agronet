@@ -45,7 +45,7 @@ class Cliente:
             self.usuario_logado = {
                 "nome": nome,
                 "loja": resposta.get("loja"),
-                "token": resposta.get("token")  # opcional, se for usar
+                "token": resposta.get("token")
             }
         else:
             self.usuario_logado = None

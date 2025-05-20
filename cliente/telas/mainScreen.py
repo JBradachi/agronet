@@ -33,7 +33,7 @@ class ProdutoCard(QWidget):
             text-overflow: ellipsis;
             white-space: nowrap;
         """)
-        label_nome.setToolTip(nome)  # Mostra o nome completo ao passar o mouse
+        label_nome.setToolTip(nome) # hover do nome
         label_nome.setText(nomeCut)
         layout.addWidget(label_nome)
 
@@ -63,6 +63,7 @@ class LojaWidget(QFrame):
         grid_container = QWidget()
         grid_layout = QGridLayout()
         grid_layout.setSpacing(15)
+        # AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH NAO FUNCIONA
         grid_layout.setContentsMargins(10, 0, 10, 0)
 
         row = 0
@@ -108,6 +109,7 @@ class TelaMainScreen(QWidget):
 
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidgetResizable(True)
+        # AAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAAHAHAH
         self.layout_principal.addWidget(self.scroll_area)
 
         self.scroll_container = QWidget()
@@ -181,7 +183,7 @@ class TelaMainScreen(QWidget):
             self.stack.setCurrentIndex(3)
 
     def abrir_pagina_produto(self, product_id):
-        # Busca o ID do produto com esse nome (modelo) da lista atual
+        
         self.stack.widget(7).carregar_produto(product_id)
         self.stack.setCurrentIndex(7)
         
@@ -192,7 +194,7 @@ class TelaMainScreen(QWidget):
 
     def logout(self):
         self.cliente.usuario_logado = None
-        self.stack.setCurrentIndex(0)  # volta para tela de login
-        self.stack.resize(350, 250)    # redimensiona para tela de login
+        self.stack.setCurrentIndex(0)  
+        self.stack.resize(350, 250)   
 
 

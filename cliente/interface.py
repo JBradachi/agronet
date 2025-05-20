@@ -57,7 +57,7 @@ def main():
     stack.addWidget(tela_login)     # index 0
     stack.addWidget(tela_cadastro)  # index 1
     stack.addWidget(tela_main)      # index 2
-    stack.addWidget(tela_create_shop)  # index 3 por exemplo
+    stack.addWidget(tela_create_shop)  # index 3
     stack.addWidget(tela_minha_loja)  # index 4
     stack.addWidget(tela_editar_produto)  # index 5
     stack.addWidget(tela_criar_produto)  # index 6

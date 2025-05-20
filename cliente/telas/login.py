@@ -16,13 +16,11 @@ class TelaLogin(QWidget):
         layout_externo = QVBoxLayout()
         layout_externo.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        # Widget encapsulado com todo o conteúdo
         conteudo = QWidget()
         layout_conteudo = QVBoxLayout()
         layout_conteudo.setAlignment(Qt.AlignmentFlag.AlignCenter)
         conteudo.setLayout(layout_conteudo)
 
-        # Logo
         caminho_logo = os.path.join("static", "agronetlogo.jpeg")
         if os.path.exists(caminho_logo):
             pixmap = QPixmap(caminho_logo).scaledToWidth(150)
@@ -31,23 +29,19 @@ class TelaLogin(QWidget):
             logo.setAlignment(Qt.AlignmentFlag.AlignCenter)
             layout_conteudo.addWidget(logo)
 
-        # Título
         titulo = QLabel("Login")
         titulo.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout_conteudo.addWidget(titulo)
 
-        # Campo de nome
         self.input_nome = QLineEdit()
         self.input_nome.setPlaceholderText("Nome de usuário")
         layout_conteudo.addWidget(self.input_nome)
 
-        # Campo de senha
         self.input_senha = QLineEdit()
         self.input_senha.setPlaceholderText("Senha")
         self.input_senha.setEchoMode(QLineEdit.EchoMode.Password)
         layout_conteudo.addWidget(self.input_senha)
 
-        # Botões
         self.btn_login = QPushButton("Entrar")
         self.btn_login.clicked.connect(self.fazer_login)
         layout_conteudo.addWidget(self.btn_login)
@@ -60,8 +54,6 @@ class TelaLogin(QWidget):
         self.btn_ajuda.clicked.connect(self.ir_para_ajuda)
         layout_conteudo.addWidget(self.btn_ajuda)
 
-
-        # Adiciona o conteúdo encapsulado ao layout externo
         layout_externo.addStretch()
         layout_externo.addWidget(conteudo)
         layout_externo.addStretch()

@@ -29,7 +29,7 @@ class ProdutoCard(QWidget):
         layout.addWidget(label_preco)
 
         btn_editar = QPushButton("Editar")
-        btn_editar.clicked.connect(lambda: on_editar_click(produto_id))  # aqui está a chave
+        btn_editar.clicked.connect(lambda: on_editar_click(produto_id))  
         layout.addWidget(btn_editar)
 
         self.setLayout(layout)
@@ -49,7 +49,7 @@ class TelaMinhaLoja(QWidget):
         self.layout_principal.addWidget(self.header)
 
         btn_criar_produto = QPushButton("Criar Novo Produto")
-        btn_criar_produto.clicked.connect(lambda: self.stack.setCurrentIndex(6))  # índice da nova tela
+        btn_criar_produto.clicked.connect(lambda: self.stack.setCurrentIndex(6)) 
         self.layout_principal.addWidget(btn_criar_produto)
 
         self.scroll_area = QScrollArea()
@@ -78,7 +78,7 @@ class TelaMinhaLoja(QWidget):
         return header_widget
 
     def on_editar_click(self, id):
-        tela_editar = self.stack.widget(5)  # índice da TelaEditarProduto
+        tela_editar = self.stack.widget(5)  
         tela_editar.carregar_produto(id)
         self.stack.setCurrentIndex(5)
 
@@ -97,7 +97,7 @@ class TelaMinhaLoja(QWidget):
                     modelo,
                     preco,
                     f"static/{nome_imagem}",
-                    id,  # ID real do produto
+                    id,  
                     self.on_editar_click
                 )
                 layout_produtos.addWidget(card)
@@ -112,6 +112,6 @@ class TelaMinhaLoja(QWidget):
 
     def logout(self):
         self.cliente.usuario_logado = None
-        self.stack.setCurrentIndex(0)  # volta para tela de login
-        self.stack.resize(350, 250)    # redimensiona para tela de login
+        self.stack.setCurrentIndex(0)  
+        self.stack.resize(350, 250)    
 
