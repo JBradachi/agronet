@@ -6,43 +6,58 @@ Repositório dedicado ao desenvolvimento do trabalho pratico de sistemas distrib
 
 - [agronet](#agronet)
   - [Table of contents](#table-of-contents)
-  - [TODO List](#todo-list)
+  - [Execução](#execução)
+  - [Organização](#organização)
+    - [banco](#banco)
+    - [cliente](#cliente)
+    - [docs](#docs)
+    - [protocolo](#protocolo)
+    - [servidor](#servidor)
 
-## TODO List
+## Execução
 
-- [X] Banco de dados (SQLite) *se tiver tempo separar do Servidor (não tivemos mas fizemos)
-- [ ] Cliente
-  - [X] Estrutura dos arquivos
-  - [ ] Pensar na interface gráfica
-    - [ ] Tela de login / cadastro usuário (cadastro_usuario)
-    - [ ] Cadastro de máquina (cadastro_maquina)
-    - [ ] Cadastro de loja (cadastro_loja)
-    - [ ] Pagina de loja vendedor (ligar/desligar exposição de anuncio)
-    - [ ] Pagina de loja comprador
-    - [ ] Pagina principal
-    - [ ] Pagina de resultado pesquisa produto
-    - [ ] Pagina de resultado pesquisa loja
-    - [ ] Pagina do produto (botão de comprar)
-    - [ ] Pagina de ajuda (ctt dos devs)
-- [ ] Servidor
-  - [X] Estrutura dos arquivos
-  - [X] Uso de Threads (parcialmente feito)
-- [ ] Estrura das mensagens (como acontecerá a conversa)
-  - [ ] "Rotas de requisição"
-    - [X] login (login)
-    - [X] Cadastro de máquina (cadastro_produto) bradas
-    - [X] Cadastro de loja (cadastro_loja) dudu
-    - [X] Cadastro usuário (cadastro_usuario) dudu
-    - [X] Edita máquina (edita_produto) dudu
-    - [X] Pagina principal
-      - [ ] get lojas (tipo pedido mostra_lojas, filtro) dudu
-      - [X] get produtos (tipo pedido mostras_produtos, filtro, opcional loja) bradas
-    - [X] Pagina produto (info_produto/ imagens_produto) bradas
-  - [ ] "Rotas de resposta"
-- [X] Docker
-
-comando para rodar corretamente no ubuntu
+Para executar o sistema distribuído, basta configurar o host da máquina com o seguinte comando:
 
 ```bash
 xhost +local:*
 ```
+
+e subir o conteiner docker com o seguinte comando:
+
+```bash
+sudo docker compose up
+```
+
+fique a vontade para criar um usuário novo no nosso marketpace :)
+
+mas se quiser usar um usuário já cadastrado, segue abaixo alguns:
+
+- **login:** admin **senha:** admin
+
+- **login:** donoDaCeleiro **senha:** celeiro
+
+- **login:** usuarioSemLoja **senha:** semloja
+
+## Organização
+
+Nosso repositório é organizado em 5 pastas principais e um arquivo docker compose que inicia todos os conteiners.
+
+### banco
+
+Diretório dedicado ao desenvolvimento do servidor de dados.
+
+### cliente
+
+Diretório dedicado ao desenvolvimento do backend do cliente e da interface.
+
+### docs
+
+Diretório dedicado para documentações que auxiliarão na construção do relatório.
+
+### protocolo
+
+Diretório dedicado para o desenvolvimento de uma classe que irá gerenciar a comunicação.
+
+### servidor
+
+Diretório dedicado ao desenvolvimento do servidor de dados.
