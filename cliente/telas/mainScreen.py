@@ -124,9 +124,17 @@ class TelaMainScreen(QWidget):
         btn_loja = QPushButton("Minha Loja")
         btn_loja.clicked.connect(self.verifica_loja)
 
+        btn_ajuda = QPushButton("Ajuda")
+        btn_ajuda.clicked.connect(self.ir_para_ajuda)
+
         header_layout.addWidget(btn_inicio)
+        btn_logout = QPushButton("Logout")
+        btn_logout.clicked.connect(self.logout)
+        header_layout.addWidget(btn_logout)
         header_layout.addStretch()
+        header_layout.addWidget(btn_ajuda)
         header_layout.addWidget(btn_loja)
+        
 
         header_widget = QWidget()
         header_widget.setLayout(header_layout)
@@ -176,4 +184,15 @@ class TelaMainScreen(QWidget):
         # Busca o ID do produto com esse nome (modelo) da lista atual
         self.stack.widget(7).carregar_produto(product_id)
         self.stack.setCurrentIndex(7)
+        
+    def ir_para_ajuda(self):
+        tela_ajuda = self.stack.widget(8)
+        tela_ajuda.set_origem(self.stack.currentIndex())
+        self.stack.setCurrentIndex(8)
+
+    def logout(self):
+        self.cliente.usuario_logado = None
+        self.stack.setCurrentIndex(0)  # volta para tela de login
+        self.stack.resize(350, 250)    # redimensiona para tela de login
+
 

@@ -134,7 +134,7 @@ class ConnectionHandler:
             #TODO: abubleblé
             if not resposta_db or not resposta_db["resultado"]:
                 # sem resposta do banco => não existe tal usuário
-                resposta = envelope.resposta_login(False)
+                resposta = envelope.resposta_login(False, None)
             else:
                 # Autentica o usuário nessa conexão
                 self.token = secrets.token_urlsafe(16)

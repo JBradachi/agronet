@@ -1,44 +1,56 @@
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox
 )
+from PyQt6.QtCore import Qt
 
 class TelaCadastro(QWidget):
     def __init__(self, stack, cliente):
         super().__init__()
         self.stack = stack
         self.cliente = cliente
-        self.setFixedSize(350, 250)
         self.init_ui()
 
     def init_ui(self):
-        layout = QVBoxLayout()
+        layout_externo = QVBoxLayout()
+        layout_externo.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        layout.addWidget(QLabel("Cadastro de Usuário"))
+        # Widget central encapsulado
+        conteudo = QWidget()
+        layout_conteudo = QVBoxLayout()
+        layout_conteudo.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        conteudo.setLayout(layout_conteudo)
+
+        titulo = QLabel("Cadastro de Usuário")
+        titulo.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout_conteudo.addWidget(titulo)
 
         self.input_nome = QLineEdit()
         self.input_nome.setPlaceholderText("Novo nome de usuário")
-        layout.addWidget(self.input_nome)
+        layout_conteudo.addWidget(self.input_nome)
 
         self.input_senha = QLineEdit()
         self.input_senha.setPlaceholderText("Senha")
         self.input_senha.setEchoMode(QLineEdit.EchoMode.Password)
-        layout.addWidget(self.input_senha)
+        layout_conteudo.addWidget(self.input_senha)
 
         self.input_confirma = QLineEdit()
         self.input_confirma.setPlaceholderText("Confirmar senha")
         self.input_confirma.setEchoMode(QLineEdit.EchoMode.Password)
-        layout.addWidget(self.input_confirma)
+        layout_conteudo.addWidget(self.input_confirma)
 
         self.btn_cadastrar = QPushButton("Cadastrar")
         self.btn_cadastrar.clicked.connect(self.fazer_cadastro)
-        layout.addWidget(self.btn_cadastrar)
+        layout_conteudo.addWidget(self.btn_cadastrar)
 
         self.btn_voltar = QPushButton("Voltar para login")
         self.btn_voltar.clicked.connect(self.voltar_login)
-        layout.addWidget(self.btn_voltar)
+        layout_conteudo.addWidget(self.btn_voltar)
 
-        self.setLayout(layout)
-        
+        layout_externo.addStretch()
+        layout_externo.addWidget(conteudo)
+        layout_externo.addStretch()
+
+        self.setLayout(layout_externo)
 
     def fazer_cadastro(self):
         nome = self.input_nome.text()

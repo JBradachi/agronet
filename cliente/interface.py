@@ -13,6 +13,7 @@ from telas.myShop import TelaMinhaLoja
 from telas.editProduct import TelaEditarProduto
 from telas.createProduct import TelaCriarProduto
 from telas.productDetail import TelaDetalheProduto
+from telas.help import TelaAjuda
 
 
 class Interface(QWidget):
@@ -51,6 +52,7 @@ def main():
     tela_editar_produto = TelaEditarProduto(stack, cliente)
     tela_criar_produto = TelaCriarProduto(stack, cliente)
     tela_detalhe = TelaDetalheProduto(stack, cliente)
+    tela_ajuda = TelaAjuda(stack)
 
     stack.addWidget(tela_login)     # index 0
     stack.addWidget(tela_cadastro)  # index 1
@@ -60,6 +62,7 @@ def main():
     stack.addWidget(tela_editar_produto)  # index 5
     stack.addWidget(tela_criar_produto)  # index 6
     stack.addWidget(tela_detalhe)  # index 7
+    stack.addWidget(tela_ajuda)  # index 8
     
     stack.setWindowTitle("Cliente Distribuído")
 

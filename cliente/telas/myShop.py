@@ -62,7 +62,14 @@ class TelaMinhaLoja(QWidget):
         btn_inicio.clicked.connect(lambda: self.stack.setCurrentIndex(2))
         btn_loja = QPushButton("Minha Loja")
         header.addWidget(btn_inicio)
+        btn_logout = QPushButton("Logout")
+        btn_logout.clicked.connect(self.logout)
+        header.addWidget(btn_logout)
         header.addStretch()
+
+        btn_ajuda = QPushButton("Ajuda")
+        btn_ajuda.clicked.connect(self.ir_para_ajuda)
+        header.addWidget(btn_ajuda)
         header.addWidget(btn_loja)
 
         header_widget = QWidget()
@@ -97,3 +104,14 @@ class TelaMinhaLoja(QWidget):
 
         container.setLayout(layout_produtos)
         self.scroll_area.setWidget(container)
+
+    def ir_para_ajuda(self):
+        tela_ajuda = self.stack.widget(8)
+        tela_ajuda.set_origem(self.stack.currentIndex())
+        self.stack.setCurrentIndex(8)
+
+    def logout(self):
+        self.cliente.usuario_logado = None
+        self.stack.setCurrentIndex(0)  # volta para tela de login
+        self.stack.resize(350, 250)    # redimensiona para tela de login
+
