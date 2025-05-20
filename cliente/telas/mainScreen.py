@@ -29,8 +29,6 @@ class ProdutoCard(QWidget):
             font-weight: bold;
             font-size: 12px;
             padding: 2px;
-            overflow: hidden;
-            text-overflow: ellipsis;
             white-space: nowrap;
         """)
         label_nome.setToolTip(nome) # hover do nome

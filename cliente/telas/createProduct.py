@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import (
-    QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QFileDialog, QHBoxLayout, QMessageBox
+    QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QFileDialog, QHBoxLayout, QMessageBox, QComboBox
 )
 import shutil
 import os
@@ -14,9 +14,16 @@ class TelaCriarProduto(QWidget):
         layout = QVBoxLayout()
         layout.addWidget(QLabel("Cadastrar Novo Produto"))
 
-        self.input_modelo = QLineEdit()
-        self.input_modelo.setPlaceholderText("Modelo da máquina")
+        self.input_modelo = QComboBox()
+        self.input_modelo.addItems([
+            "Challenger MT525D 4WD",
+            "Escavadeira Hidráulica de Mineração 6015",
+            "Semeadora Linha PLB",
+            "Coffee Express Multi"
+        ])
+        self.input_modelo.setCurrentIndex(-1)  # Nenhum selecionado inicialmente
         layout.addWidget(self.input_modelo)
+
 
         self.input_preco = QLineEdit()
         self.input_preco.setPlaceholderText("Preço")
@@ -71,7 +78,7 @@ class TelaCriarProduto(QWidget):
             self.label_imagem.setText(f"Imagem: {os.path.basename(caminho)}")
 
     def cadastrar(self):
-        modelo = self.input_modelo.text()
+        modelo = self.input_modelo.currentText()
         preco = self.input_preco.text()
         mes = self.input_mes.text()
         ano = self.input_ano.text()

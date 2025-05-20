@@ -1,6 +1,5 @@
-from PyQt6.QtWidgets import (
-    QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox
-)
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox
+from PyQt6.QtCore import Qt
 from datetime import datetime
 
 class TelaCreateShop(QWidget):
@@ -8,13 +7,16 @@ class TelaCreateShop(QWidget):
         super().__init__()
         self.stack = stack
         self.cliente = cliente
-        self.setFixedSize(400, 350)
         self.init_ui()
 
     def init_ui(self):
         layout = QVBoxLayout()
+        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        layout.addWidget(QLabel("Criar Nova Loja"))
+        titulo = QLabel("Criar Nova Loja")
+        titulo.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        titulo.setStyleSheet("font-size: 18px; font-weight: bold;")
+        layout.addWidget(titulo)
 
         self.input_nome = QLineEdit()
         self.input_nome.setPlaceholderText("Nome da loja")
@@ -58,8 +60,15 @@ class TelaCreateShop(QWidget):
         ano = hoje.year
 
         resposta = self.cliente.cadastra_loja(nome, dia, mes, ano, cidade, estado, descricao)
+        if resposta.get("status") == 0:
+            self.cliente.usuario_logado["loja"] = nome
+            self.stack.widget(4).carregar_dados()
+            self.stack.setCurrentIndex(4)
+
+        self.stack.widget(2).carregar_dados()
+        self.stack.setCurrentIndex(2)
         QMessageBox.information(self, "Resultado", str(resposta))
 
     def voltar(self):
         self.stack.widget(2).carregar_dados()
-        self.stack.setCurrentIndex(2)  # Volta para a tela principal
+        self.stack.setCurrentIndex(2)
