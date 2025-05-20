@@ -18,9 +18,9 @@ class TelaAjuda(QWidget):
 
         texto = QLabel(
             "Entre em contato com os desenvolvedores:\n\n"
-            "Zezinho – a@gmail.com – +55 66 99999-9999\n"
-            "Huguinho – b@gmail.com – +55 66 99999-9998\n"
-            "Luisinho – c@gmail.com – +55 66 99999-9997"
+            "Eduardo Antunes – eduardo.a.vieira@ufv.br – +55 37 98832-2406\n"
+            "Guilherme Wilke – guilherme.wilke@ufv.br – +55 66 99600-8818\n"
+            "João Bradachi – joao.bradachi@ufv.br – +55 31 97188-2732"
         )
         texto.setAlignment(Qt.AlignmentFlag.AlignCenter)
         texto.setWordWrap(True)
