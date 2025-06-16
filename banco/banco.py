@@ -33,8 +33,9 @@ def main():
         conn_db = sqlite3.connect('./agronet.db')
         setup_database(conn_db)
         conn_db.close()
-    except:
+    except Exception as e:
         log.error("Erro na conexão do banco")
+        log.error(e)
         exit(1)
 
     # Servidor de dados começa a ouvir e cria uma thread a cada conexão
