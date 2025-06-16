@@ -1,9 +1,5 @@
 # Variables
-PYTHON := python3
-VENV_DIR := venv
-REQUIREMENTS := requirements.txt
-
-# Default target
+# Alvo parão, execute com make -j 3
 .PHONY: all
 all: subsys_bd subsys_cli subsys_ser
 

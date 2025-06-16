@@ -28,6 +28,12 @@ e subir o conteiner docker com o seguinte comando:
 sudo docker compose up
 ```
 
+Agora precisamos rodar apenas o comando:
+
+```bash
+make -j 3
+```
+
 fique a vontade para criar um usuário novo no nosso marketpace :)
 
 mas se quiser usar um usuário já cadastrado, segue abaixo alguns:
