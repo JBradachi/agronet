@@ -34,7 +34,7 @@ class ProdutoCard(QWidget):
 
         self.setLayout(layout)
         self.setFixedSize(300, 370)
-        self.setStyleSheet("background-color: white; border: 1px solid #ccc; border-radius: 6px;")
+        # self.setStyleSheet("background-color: white; border: 1px solid #ccc; border-radius: 6px;")
 
 
 class TelaMinhaLoja(QWidget):

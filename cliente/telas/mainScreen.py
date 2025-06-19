@@ -37,13 +37,13 @@ class ProdutoCard(QWidget):
 
         label_preco = QLabel(f"R$ {preco:,.2f}")
         label_preco.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        label_preco.setStyleSheet("color: green; font-size: 13px;")
+        # label_preco.setStyleSheet("color: green; font-size: 13px;")
         layout.addWidget(label_preco)
 
         self.setLayout(layout)
         self.setFixedSize(250, 320)
         self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-        self.setStyleSheet("background-color: #fff; border: 1px solid #ccc; border-radius: 8px; ")
+        # self.setStyleSheet("background-color: #fff; border: 1px solid #ccc; border-radius: 8px; ")
 
         self.mousePressEvent = lambda event: on_click_callback(product_id)
 
@@ -89,7 +89,7 @@ class LojaWidget(QFrame):
         layout.addWidget(grid_container)
 
         self.setLayout(layout)
-        self.setStyleSheet("background-color: #f8f8f8; border-radius: 10px; margin-bottom: 16px;")
+        # self.setStyleSheet("background-color: #f8f8f8; border-radius: 10px; margin-bottom: 16px;")
 
 
 

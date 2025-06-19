@@ -3,11 +3,11 @@
 .PHONY: all
 all: subsys_bd subsys_cli subsys_ser
 
-subsys_bd: 
+subsys_bd:
 	cd banco && $(MAKE)
-subsys_cli: 
+subsys_cli:
 	cd cliente && $(MAKE)
-subsys_ser: 
+subsys_ser:
 	cd servidor && $(MAKE)
 
 # Clean up

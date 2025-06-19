@@ -14,10 +14,10 @@ $(VENV_DIR)/bin/activate: $(REQUIREMENTS)
 # Ativa o ambiente
 venv: $(VENV_DIR)/bin/activate
 
-runcli: 
+runcli:
 	$(VENV_DIR)/bin/$(PYTHON) interface.py
 
-# Limpa 
+# Limpa
 .PHONY: clean
 clean:
 	rm -rf $(VENV_DIR)

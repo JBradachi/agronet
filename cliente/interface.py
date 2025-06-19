@@ -63,17 +63,17 @@ def main():
     stack.addWidget(tela_criar_produto)  # index 6
     stack.addWidget(tela_detalhe)  # index 7
     stack.addWidget(tela_ajuda)  # index 8
-    
+
     stack.setWindowTitle("Cliente Distribuído")
 
-    stack.setStyleSheet("""
-        QWidget {
-            background-color: white;
-        }
-        QLineEdit, QPushButton {
-            background-color: white;
-        }
-    """)
+    # stack.setStyleSheet("""
+    #     QWidget {
+    #         background-color: white;
+    #     }
+    #     QLineEdit, QPushButton {
+    #         background-color: white;
+    #     }
+    # """)
 
     stack.show()
 
