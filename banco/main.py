@@ -9,9 +9,6 @@ import logging as log
 from connection import ConnectionHandler
 from protocolo.protocolo import JsonTSocket
 
-HOST = "127.0.0.2"
-PORT = 3600
-
 log.basicConfig(level=log.INFO)
 
 def setup_database(conn_db):
@@ -22,12 +19,6 @@ def setup_database(conn_db):
     cur.close()
 
 def main():
-    # Cria um socket para comunicação com o servidor de aplicação
-    server = JsonTSocket()
-    server.bind(HOST, PORT)
-    server.listen()
-
-    log.info(f"Servidor de dados ouvindo em {HOST}:{PORT}")
     try:
         # Cria o banco e insere informações base
         conn_db = sqlite3.connect('./agronet.db')
@@ -37,15 +28,6 @@ def main():
         log.error("Erro na conexão do banco")
         log.error(e)
         exit(1)
-
-    # Servidor de dados começa a ouvir e cria uma thread a cada conexão
-    while True:
-        try:
-            conn, addr = server.accept()
-            ConnectionHandler(conn, addr)
-        except:
-            log.error("erro no listener")
-            exit(2)
 
 if __name__ == "__main__":
     main()

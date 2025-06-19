@@ -97,16 +97,12 @@ class Cliente:
     def requisita_produto_completo(self, id):
         data = { "tipo_pedido" : "requisita_produto", "id" : id }
         data = self.request(data)
-        log.info(f'{data}')
-        log.info(f'ID: {id}')
 
         nome_imagem = busca_nome_imagem(data)
         if nome_imagem not in os.listdir("static"):
             self.baixa_imagens(nome_imagem)
 
         log.info("produto recebido com sucesso")
-
-        log.info(f"RESULTADOOOO: {data['resultado']}")
 
         return data["resultado"]
 
@@ -115,8 +111,6 @@ class Cliente:
     def requisita_todos_produtos(self):
         data = { "tipo_pedido" : "todos_produtos" }
         produtos = self.request(data)
-
-        log.info(f"[DEBUG] resposta bruta: {produtos}")
 
         if not produtos or produtos.get("status") != 0 or "resultado" not in produtos:
             log.error("requisita_todos_produtos: resposta inválida")
