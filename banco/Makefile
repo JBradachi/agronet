@@ -15,7 +15,7 @@ $(VENV_DIR)/bin/activate: $(REQUIREMENTS)
 venv: $(VENV_DIR)/bin/activate
 
 runbd: 
-	$(VENV_DIR)/bin/$(PYTHON) main.py
+	$(VENV_DIR)/bin/$(PYTHON) Banco.py
 
 # Limpa 
 .PHONY: clean

@@ -103,21 +103,21 @@ class Banco:
     
 # --------------- AUXILIAR ---------------------
 
-def safe_name(self, msg):
-        # tenta encontrar um nome que não de problemas
-    while True:
-        verificacao = { "consulta" : "SELECT imagem FROM Maquina "
-                        "WHERE imagem = ?", "parametros": (msg['imagem'],)}
-        existe = self.exec_query(verificacao)
-        if not existe["resultado"]:
-            break
-        nome_atual = msg['imagem'].split(".")
-        nome_atual[0] = nome_atual[0]+"-1"
-        nome_novo = ".".join(nome_atual)
-        msg['imagem'] = nome_novo
-        msg["parametros"][0] = nome_novo
-    
-    return msg
+    def safe_name(self, msg):
+            # tenta encontrar um nome que não de problemas
+        while True:
+            verificacao = { "consulta" : "SELECT imagem FROM Maquina "
+                            "WHERE imagem = ?", "parametros": (msg['imagem'],)}
+            existe = self.exec_query(verificacao)
+            if not existe["resultado"]:
+                break
+            nome_atual = msg['imagem'].split(".")
+            nome_atual[0] = nome_atual[0]+"-1"
+            nome_novo = ".".join(nome_atual)
+            msg['imagem'] = nome_novo
+            msg["parametros"][0] = nome_novo
+        
+        return msg
 
 daemon = Pyro5.server.Daemon()
 ns = Pyro5.api.locate_ns()           
