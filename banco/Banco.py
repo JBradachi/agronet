@@ -96,11 +96,11 @@ class Banco:
             self.exec_query(atualiza)
             return { "status" : 0,
                      "mensagem" : "compra bem sucedida"}
-        
+
         # sem estoque
         return { "status" : -1,
                  "mensagem" : "compra mal sucedida, sem estoque"}
-    
+
 # --------------- AUXILIAR ---------------------
 
     def safe_name(self, msg):
@@ -116,11 +116,11 @@ class Banco:
             nome_novo = ".".join(nome_atual)
             msg['imagem'] = nome_novo
             msg["parametros"][0] = nome_novo
-        
+
         return msg
 
 daemon = Pyro5.server.Daemon()
-ns = Pyro5.api.locate_ns()           
+ns = Pyro5.api.locate_ns()
 uri = daemon.register(Banco)
 ns.register("agronet.banco", uri)
 

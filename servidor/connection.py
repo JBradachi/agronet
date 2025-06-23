@@ -2,14 +2,13 @@ import sys,os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from threading import Thread
-import secrets, struct
+import secrets
 import envelope
 import logging as log
 from protocolo.protocolo import JsonTSocket
 
 DB_HOST = "127.0.0.2"
 DB_PORT = 3600
-PAYLOAD_SIZE = struct.calcsize("!Q")
 
 # Classe que cria threads e lida com conexões
 class ConnectionHandler:
@@ -161,9 +160,9 @@ class ConnectionHandler:
             log.info(f'A MENSAGEM: {mensagem}')
             self.conn_db.send_dict(mensagem)
             resposta_db = self.conn_db.recv_dict()
-            
+
             log.info(f"{resposta_db}")
-            
+
             if resposta_db.get("status") != 0:
                 self.conn.send_dict({"status": -1, "erro": "Erro ao atualizar visibilidade"})
             else:

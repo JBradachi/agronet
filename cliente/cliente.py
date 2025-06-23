@@ -7,7 +7,6 @@ import base64
 import logging as log
 
 import Pyro5.api
-from protocolo.protocolo import JsonTSocket
 from protocolo.entidades import Loja, Usuario, Maquina
 from threading import Thread
 
@@ -147,7 +146,7 @@ class Cliente:
 
     def compra_produto(self, id):
         return self.server.compra_produto(id)
-    
+
     def get_imagens_faltantes(self, data):
         imagens_cliente = os.listdir("static")
         imagens_banco = [produto[3] for produto in data["resultado"]]

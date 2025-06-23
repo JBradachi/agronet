@@ -2,24 +2,15 @@ import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import secrets
-import struct
 import envelope
 import logging as log
-from protocolo.protocolo import JsonTSocket
 import Pyro5.api
 
 log.basicConfig(level=log.INFO)
 
-
-DB_HOST = "127.0.0.2"
-DB_PORT = 3600
-PAYLOAD_SIZE = struct.calcsize("!Q")
-
 @Pyro5.api.expose
 class ServidorSD:
     def __init__(self):
-
-        
         try:
             ns = Pyro5.api.locate_ns()
             uri = ns.lookup("agronet.banco")
@@ -48,7 +39,7 @@ class ServidorSD:
             db_error()
             log.info(e)
             return {"status": -1, "erro": str(e)}
-        
+
     def login(self, nome, senha):
         try:
             mensagem = envelope.consulta(
@@ -67,7 +58,7 @@ class ServidorSD:
             db_error()
             log.info(e)
             return {"status": -1, "erro": str(e)}
-        
+
     def edita_produto(self, id_maquina, visivel):
         visivel_flag = 1 if visivel else 0
         mensagem = envelope.consulta("UPDATE Maquina SET visivel = ? WHERE id = ?", (visivel_flag, id_maquina))
@@ -98,14 +89,14 @@ class ServidorSD:
         msg_user = envelope.consulta(
             "UPDATE Usuario SET loja = ? WHERE nome = ?", (nome, self.user)
         )
-            
+
         try:
             resp_db = self.banco.exec_query(mensagem)
 
             if int(resp_db.get("status", -1)) != 0:
                 return resp_db  # Erro no insert da loja
 
-            
+
             self.banco.exec_query(msg_user)
 
             return envelope.ok_resp()
@@ -132,7 +123,7 @@ class ServidorSD:
         )
 
         try:
-            
+
             self.banco.handle_insere_produto(mensagem)
             return envelope.ok_resp()
         except Exception as e:
@@ -185,7 +176,6 @@ class ServidorSD:
         except Exception as e:
             log.error(e)
             return {"status": -1, "erro": str(e)}
-
 
 def db_error():
     log.error("Erro de comunicação com o servidor de banco de dados")

@@ -3,7 +3,7 @@
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QStackedWidget
+from PyQt6.QtWidgets import QApplication, QWidget, QStackedWidget
 from cliente import Cliente
 from telas.login import TelaLogin
 from telas.cadastro import TelaCadastro
