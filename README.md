@@ -7,6 +7,8 @@ Repositório dedicado ao desenvolvimento do trabalho pratico de sistemas distrib
 - [agronet](#agronet)
   - [Table of contents](#table-of-contents)
   - [Execução](#execução)
+    - [Com makefile](#com-makefile)
+    - [Com docker (descontinuado)](#com-docker-descontinuado)
   - [Organização](#organização)
     - [banco](#banco)
     - [cliente](#cliente)
@@ -15,6 +17,18 @@ Repositório dedicado ao desenvolvimento do trabalho pratico de sistemas distrib
     - [servidor](#servidor)
 
 ## Execução
+
+### Com makefile
+
+Agora precisamos rodar apenas o comando:
+
+```bash
+make -j 4
+```
+
+No diretório raiz do projeto.
+
+### Com docker (descontinuado)
 
 Para executar o sistema distribuído, basta configurar o host da máquina com o seguinte comando:
 
@@ -26,12 +40,6 @@ e subir o conteiner docker com o seguinte comando:
 
 ```bash
 sudo docker compose up
-```
-
-Agora precisamos rodar apenas o comando:
-
-```bash
-make -j 3
 ```
 
 fique a vontade para criar um usuário novo no nosso marketpace :)
@@ -68,18 +76,3 @@ Diretório dedicado para o desenvolvimento de uma classe que irá gerenciar a co
 
 Diretório dedicado ao desenvolvimento do servidor de dados.
 
-libx11-xcb1 \
-libxcb-icccm4 \
-libxcb-image0 \
-libxcb-keysyms1 \
-libxcb-randr0 \
-libxcb-render-util0 \
-libxcb-shape0 \
-libxcb-xkb1 \
-libxkbcommon-x11-0 \
-libxcb-cursor0 \
-libqt6gui6 \
-libqt6widgets6 \
-libqt6core6 \
-x11-utils \
-sqlite3 \
